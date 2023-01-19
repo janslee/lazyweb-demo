@@ -1,0 +1,29 @@
+{
+    "name": "a-template",
+    "version": "1.0.0",
+    "description": "",
+    "author": "",
+    "scripts": {
+        "server": "cd server && npm run dev ",
+        "client": "cd client  &&  npm run dev ",
+        "dev": "concurrently \"npm run client\" \"npm run server\"",
+        "start": "cd server && npm run start",
+        "stop": "cd server && npm run stop",
+        "build": "npm run clientbuild && npm run serverbuild",
+        "install": "npm run clientInstall && npm run serverInstall",
+        "clientInstall": "cd client && yarn",
+        "serverInstall": "cd server && yarn",
+        "clientbuild": "cd client && npm run build",
+        "serverbuild": "cd server && npm run build"
+    },
+    "keywords": [
+        "node",
+        "react",
+        "midway",
+        "typeScript",
+        "ant-design"
+    ],
+    "dependencies": {
+        "concurrently": "^7.5.0"
+    }
+}
