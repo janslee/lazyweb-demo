@@ -76,8 +76,55 @@ export class APIController {
     if(param?.table!=null)
     table=param?.table
 
+
     let where = "id >? "
-    let p=[0]
+    let p=["0"]
+
+    console.log("filters",param?.filters)
+  if(param?.filters!=null)
+  {
+    const filters=param?.filters
+    for(let i in filters)
+    {
+      if(filters[i]=="")
+      continue
+      where+=` and ${i} in (?) `
+      p.push(filters[i])
+    }
+  }
+
+  if(param?.search!=null)
+  {
+    const search=param?.search
+    for(let i in search)
+    {
+      if(search[i]=="")
+      continue
+      if(i.indexOf("min:")>=0)
+      {
+      where+=` and ${i.replace("min:","")} >=? `
+      p.push(search[i])
+    }
+    else if(i.indexOf("max:")>=0)
+    {
+      where+=` and ${i.replace("max:","")} <=? `
+      p.push(search[i])
+    }
+    else if((i.indexOf("date")>=0 || i.indexOf("time")>=0) && typeof(search[i])=="object")
+    {
+      where+=` and ${i}>=? and  ${i}<=? `
+      p.push(search[i][0])
+      p.push((parseInt(search[i][1])+86400)+"")
+    }
+    else{
+      where+=` and ${i} like ? `
+      p.push("%"+search[i]+"%")
+    }
+
+
+    }
+  }
+
     let pageSize=12
     let page=1
     if(param?.page!=null)
@@ -91,6 +138,8 @@ export class APIController {
       order=order.replace("end","")
       
      }
+     console.log("where",where)
+     console.log("p",p)
     let rs = await this.dbopService.name(table).pagesize(pageSize).page(page).order(order).where(where, p).select()
    let total=await this.dbopService.name(table).where(where, p).count("*")
     return { success: true, msg: 'OK', code: 0, "data": rs,total:total };
@@ -105,6 +154,17 @@ export class APIController {
     delete param["id"]
   
     let rs = await this.dbopService.name(param["name"]).where(where, [id]).update(params)
+    return { success: true, msg: 'OK', code: 0, "data": rs };
+  }
+
+
+  @All('/Delete')
+  async Delete(@Body() params: {}, @Query() query: {}) {
+    let param = Object.assign(params, query)
+    let where = "id in (?) "
+    let ids=param["ids"]
+  
+    let rs = await this.dbopService.name(param["table"]).where(where, [ids]).delete()
     return { success: true, msg: 'OK', code: 0, "data": rs };
   }
 

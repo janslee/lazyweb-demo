@@ -98,6 +98,8 @@ export class JwtcustomMiddleware {
     ignore=true
     if(ignore==false && ctx.path.indexOf('/PageData') !== -1)
     ignore=true
+    if(ignore==false && ctx.path.indexOf('/api/Delete') !== -1)
+    ignore=true
     return !ignore;
   }
 }
