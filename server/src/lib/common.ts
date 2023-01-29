@@ -125,5 +125,21 @@ static FormatDate =( date:Date=new Date())=>{
 
     }
 
+    static  get_file_suffix =(filename:string) =>{
+     let pos = filename.lastIndexOf('.')
+    let  suffix = ''
+      if (pos != -1) {
+        suffix = filename.substring(pos)
+      }
+      return suffix;
+    }
+static GenUUID=(filename):string=>{
+  let ext=common.get_file_suffix(filename)
+  if(ext==null  || ext=="")
+  ext=".jpg"
+return common.unixtime13().toString()+ext
+}
+
+
  }
    

@@ -24,6 +24,24 @@ jwt: {
 passport: {
   session: false,
 },
+
+cors: {
+  origin:"*",
+  allowMethods:"GET,HEAD,PUT,POST,DELETE,PATCH,OPTIONS",
+  allowHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  credentials: true,
+},
+oss: {
+  // normal oss bucket
+  client: {
+    accessKeyId: '2SBVTeVOU7bJiJwm',
+    accessKeySecret: 'kPgMeJ3ZU0YAFnmPwsbDzXMCiVkx36',
+    bucket: 'd51kdtop',
+    endpoint: 'oss-cn-shanghai.aliyuncs.com',
+    timeout: '60s',
+  },
+},
+
 } as MidwayConfig;
 
 

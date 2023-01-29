@@ -36,6 +36,11 @@ const authHeaderInterceptor = (url: string, options: RequestOptionsInit) => {
 //写入token
 const demoResponseInterceptors = (response: Response, options: RequestOptionsInit) => {
   //response.headers.append('interceptors', 'yes yo');
+ if(response.status==401)
+ {
+  history.push("/user/login");
+  return
+ }
   if(response.headers.get("token")!=null && response.headers.get("token")!="")
   {
     let token=response.headers.get("token")

@@ -1,4 +1,4 @@
-import { Inject, Controller, Get, Post, All, Body, Query, App } from '@midwayjs/decorator';
+import { Inject, Controller, Get, Post, All, Body, Query, App, SetHeader} from '@midwayjs/decorator';
 import { Context, Application } from '@midwayjs/koa';
 import { UserService } from '../service/user.service';
 import { DBService } from '../service/DB.service';
@@ -8,8 +8,8 @@ import { create } from 'jsondiffpatch';
 import { JwtService } from '@midwayjs/jwt';
 import { JwtPassportMiddleware } from '../middleware/jwt.middleware';
 import { common } from '../lib/common';
-
-
+import { Files, Fields } from '@midwayjs/decorator';
+import { OSSService } from '@midwayjs/oss';
 @Controller('/api')
 export class APIController {
 
@@ -22,7 +22,8 @@ export class APIController {
   @Inject()
   userService: UserService;
 
-
+  @Inject()
+  ossService: OSSService;
 
   @Inject()
   dBService: DBService;
@@ -71,8 +72,8 @@ export class APIController {
   async Select(@Body() params: {}, @Query() query: {}) {
     let param:any = Object.assign(params, query)
     let table="page"
-    if(param?.name!=null)
-    table=param?.name
+    if(param?.table_name!=null)
+    table=param?.table_name
     if(param?.table!=null)
     table=param?.table
 
@@ -140,8 +141,19 @@ export class APIController {
      }
      console.log("where",where)
      console.log("p",p)
-    let rs = await this.dbopService.name(table).pagesize(pageSize).page(page).order(order).where(where, p).select()
-   let total=await this.dbopService.name(table).where(where, p).count("*")
+     let rs =null
+     let total=0
+     if(param?.table_name!=null)
+     {
+     rs = await this.dbopService.name(table).pagesize(pageSize).page(page).order(order).where(where, p).select()
+    total=await this.dbopService.name(table).where(where, p).count("*")
+  }
+
+  if(param?.table!=null)
+  {
+  rs = await this.dbopService.table(table).pagesize(pageSize).page(page).order(order).where(where, p).select()
+ total=await this.dbopService.table(table).where(where, p).count("*")
+}
     return { success: true, msg: 'OK', code: 0, "data": rs,total:total };
   }
 
@@ -152,9 +164,28 @@ export class APIController {
     let id=param["id"]
 
     delete param["id"]
-  
-    let rs = await this.dbopService.name(param["name"]).where(where, [id]).update(params)
-    return { success: true, msg: 'OK', code: 0, "data": rs };
+    
+    let table= param["table"]
+    delete param["table"]
+let table_name=param["table_name"]
+delete param["table_name"]
+let rs=null
+if(id!=null)
+{
+if(table!=null && table!="")
+     rs = await this.dbopService.table(table).where(where, [id]).update(params)
+     if(table_name!=null && table_name!="")
+     rs = await this.dbopService.name(table_name).where(where, [id]).update(params) 
+    } 
+   else
+   {
+    if(table!=null && table!="")
+     rs = await this.dbopService.table(table).insert(params)
+     if(table_name!=null && table_name!="")
+     rs = await this.dbopService.name(table_name).insert(params) 
+   }
+   
+     return { success: true, msg: 'OK', code: 0, "data": rs };
   }
 
 
@@ -163,8 +194,11 @@ export class APIController {
     let param = Object.assign(params, query)
     let where = "id in (?) "
     let ids=param["ids"]
-  
-    let rs = await this.dbopService.name(param["table"]).where(where, [ids]).delete()
+    let rs =null
+    if(param["table"]!=null)
+     rs = await this.dbopService.table(param["table"]).where(where, [ids]).delete()
+     if(param["table_name"]!=null)
+     rs = await this.dbopService.name(param["table_name"]).where(where, [ids]).delete()
     return { success: true, msg: 'OK', code: 0, "data": rs };
   }
 
@@ -175,6 +209,51 @@ export class APIController {
     return { "rs": rs }
 
   }
+
+
+  @All('/Upload')
+  async Upload(@Files() files, @Fields() fields) {
+
+    /*
+{
+    "files": [
+        {
+            "filename": "自定义渲染.png",
+            "data": "C:\\Users\\36101\\AppData\\Local\\Temp\\midway-upload-files\\upload_1674465300905.0.6497113851801981.0.png",
+            "fieldName": "",
+            "mimeType": "image/png",
+            "_ext": ".png"
+        }
+    ],
+    "fields": {
+        "aaa": "222",
+        "bbb": "333"
+    }
+}
+
+    */
+let NewFiles=[]   
+for(let i in files)
+{
+  let row=files[i]
+  const localFile = row["data"];
+  let NewFile="images/"+common.GenUUID(row["filename"])
+  await this.ossService.put(NewFile, localFile);
+  NewFiles.push(NewFile)
+}
+//SetHeader('Access-Control-Allow-Credentials', 'true')
+SetHeader('Access-Control-Allow-Origin', '*');
+SetHeader('Access-Control-Allow-Headers', 'x-requested-with, accept, origin, content-type');
+SetHeader('Access-Control-Allow-Methods', 'OPTIONS, GET, PUT, POST, DELETE');
+    return {
+      "data":NewFiles,
+      success: true,
+     code:0,
+     msg:"上传成功"
+    }
+    
+  }
+
 
   @All('/sql2')
   async sql2(@Body() params: {}, @Query() query: {}) {
@@ -1054,6 +1133,22 @@ let menu=[
       ],
     },
   
+    {
+      name: 'sys',
+      icon: 'UserAddOutlined',
+      path: '/sys',
+     // component: './custom',
+  
+      routes: [
+        {
+          name: 'iframe',
+          icon: 'smile',
+          path: '/sys/iframe/%2Fvisual%2Fpreview.html%3Fpage_id%3D2',
+         
+          component: './sys/iframe',
+        },
+      ]
+    },
     {
       name: 'custom',
       icon: 'UserAddOutlined',

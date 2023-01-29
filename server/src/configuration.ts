@@ -3,6 +3,7 @@ import * as koa from '@midwayjs/koa';
 import * as validate from '@midwayjs/validate';
 import * as info from '@midwayjs/info';
 import { join } from 'path';
+import * as oss from '@midwayjs/oss';
 import * as staticCache from 'koa-static-cache';
 import * as jwt from '@midwayjs/jwt';
 import * as passport from '@midwayjs/passport';
@@ -10,12 +11,14 @@ import * as passport from '@midwayjs/passport';
 // import { NotFoundFilter } from './filter/notfound.filter';
 import { ReportMiddleware } from './middleware/report.middleware';
 import { JwtcustomMiddleware } from './middleware/jwtcustom.middleware';
-
+import * as upload from '@midwayjs/upload';
 @Configuration({
   imports: [
     koa,
     jwt,
     validate,
+    upload,
+    oss,
     passport,
     {
       component: info,

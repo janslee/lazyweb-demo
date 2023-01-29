@@ -276,6 +276,21 @@
   },
 
   {
+    name: 'sys',
+    icon: 'UserAddOutlined',
+    path: '/sys',
+   // component: './custom',
+
+    routes: [
+      {
+        name: 'iframe',
+        icon: 'smile',
+        path: '/sys/iframe/:url',
+        component: './sys/iframe',
+      },
+    ]
+  },
+  {
     name: 'custom',
     icon: 'UserAddOutlined',
     path: '/custom',

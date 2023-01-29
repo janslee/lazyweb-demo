@@ -111,11 +111,21 @@ const Workplace: FC = () => {
       </List.Item>
     );
   };
-
+  const tabList = [{
+    key: 'detail',
+    tab: '详情',
+    children: (<div>详情11</div>),
+  }, {
+    key: 'rule',
+    tab: '规则',
+    children: (<div>规则22</div>),
+  }];
   return (
     <PageContainer
+    tabList={tabList}
       content={
         <PageHeaderContent
+      
           currentUser={{
             avatar: 'https://gw.alipayobjects.com/zos/rmsportal/BiazfanxmamNRoxxVxka.png',
             name: '吴彦祖',

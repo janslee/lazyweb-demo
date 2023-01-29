@@ -20,6 +20,7 @@ export async function fetchMenuData(options?: { [key: string]: any }) {
   }>('/api/MenuList', {
     method: 'GET',
     ...(options || {}),
+
   });
 }
 
