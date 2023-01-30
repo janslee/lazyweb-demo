@@ -68,6 +68,33 @@ export class APIController {
     return { success: true, msg: 'OK', code: 0, "data": rs };
   }
 
+
+  @All('/Find')
+  async Find(@Body() params: {}, @Query() query: {}) {
+    let param:any = Object.assign(params, query)
+    let table="page"
+    
+
+    let id=param?.id
+    delete param["id"]
+
+    let where = "id =? "
+let rs=null
+    if(param?.table_name!=null)
+    {
+    table=param?.table_name
+     rs = await this.dbopService.name(table).where(where, [id]).find()
+  }
+  if(param?.table!=null)
+  {
+    table=param?.table
+    rs = await this.dbopService.table(table).where(where, [id]).find()
+  }
+  
+    return { success: true, msg: 'OK', code: 0, "data": rs };
+  }
+
+
   @All('/Select')
   async Select(@Body() params: {}, @Query() query: {}) {
     let param:any = Object.assign(params, query)
@@ -1144,6 +1171,13 @@ let menu=[
           name: 'iframe',
           icon: 'smile',
           path: '/sys/iframe/%2Fvisual%2Fpreview.html%3Fpage_id%3D2',
+         
+          component: './sys/iframe',
+        },
+        {
+          name: 'menu',
+          icon: 'smile',
+          path: '/sys/iframe/%2Fvisual%2Fpreview.html%3Fpage_id%3D6',
          
           component: './sys/iframe',
         },
