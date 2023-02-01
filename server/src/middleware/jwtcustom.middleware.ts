@@ -102,6 +102,10 @@ export class JwtcustomMiddleware {
     ignore=true
     if(ignore==false && ctx.path.indexOf('/api/Upload') !== -1)
     ignore=true
+
+    if(ignore==false && ctx.path.indexOf('/api/ManageMenuList') !== -1)
+    ignore=true
+    
     return !ignore;
   }
 }

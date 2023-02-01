@@ -6,7 +6,7 @@ import { history, Link } from 'umi';
 import RightContent from '@/components/RightContent';
 import Footer from '@/components/Footer';
 import { currentUser as queryCurrentUser,fetchMenuData } from './services/ant-design-pro/api';
-import { BookOutlined, LinkOutlined } from '@ant-design/icons';
+import { BookOutlined, CopyOutlined, DeleteOutlined, LinkOutlined, PlayCircleOutlined, QuestionOutlined } from '@ant-design/icons';
 import defaultSettings from '../config/defaultSettings';
 import {
  
@@ -16,7 +16,10 @@ import {
 
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
-import {BarChartOutlined,UserOutlined,WarningOutlined,CheckCircleOutlined,ProfileOutlined,TableOutlined, HeartOutlined, SmileOutlined,HomeOutlined,DashboardOutlined,FormOutlined,UnorderedListOutlined } from '@ant-design/icons';
+
+import * as icons from '@ant-design/icons'
+import React from 'react';
+
 let admin:any={}
 //拦截器
 const authHeaderInterceptor = (url: string, options: RequestOptionsInit) => {
@@ -75,19 +78,28 @@ export const initialStateConfig = {
 };
 
 const IconMap = {
-  smile: <SmileOutlined />,
-  heart: <HeartOutlined />,
-  home: <HomeOutlined />,
-  dashboard: <DashboardOutlined />,
-  form: <FormOutlined />,
-  list: <UnorderedListOutlined />,
-table: <TableOutlined />,
-profile: <ProfileOutlined />,
-CheckCircleOutlined: <CheckCircleOutlined/>,
-warning: <WarningOutlined/>,
-user: <UserOutlined/>,
-highlight:<BarChartOutlined/>
+  smile: <icons.SmileOutlined />,
+  heart: <icons.HeartOutlined />,
+  home: <icons.HomeOutlined />,
+  dashboard: <icons.DashboardOutlined />,
+  form: <icons.FormOutlined />,
+  list: <icons.UnorderedListOutlined />,
+table: <icons.TableOutlined />,
+profile: <icons.ProfileOutlined />,
+CheckCircleOutlined: <icons.CheckCircleOutlined/>,
+warning: <icons.WarningOutlined/>,
+user: <icons.UserOutlined/>,
+highlight:<icons.BarChartOutlined/>,
+DownOutlined:<icons.DownOutlined />,
+PlayCircleOutlined:<PlayCircleOutlined />,
+QuestionOutlined:<QuestionOutlined />,
+CopyOutlined:<CopyOutlined />,
+DeleteOutlined:<DeleteOutlined />,
 };
+
+const CreateIcon=(IconName:string)=>{
+return React.createElement(icons[IconName],{},null)
+}
 /**
  * @see  https://umijs.org/zh-CN/plugins/plugin-initial-state
  * 初始化权限
@@ -139,7 +151,9 @@ cqa?:string;
 const loopMenuItem = (menus: any[]): MenuDataItem[] =>
   menus.map(({ icon, routes, ...item }) => ({
     ...item,
-    icon: icon && IconMap[icon as string],
+   // icon: icon && IconMap[icon as string],
+    icon: icon && CreateIcon(icon as string),
+    
     children: routes && loopMenuItem(routes),
   }));
 

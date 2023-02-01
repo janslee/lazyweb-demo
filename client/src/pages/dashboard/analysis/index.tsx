@@ -106,11 +106,12 @@ const Analysis: FC<AnalysisProps> = (props:any) => {
 useEffect(()=>{
 
   console.log(props?.match?.params)
-  let id=props?.match?.params?.id
+  //let id=props?.match?.params?.id
 
   },[])
 
   return (
+    
     <GridContent>
     
       <>

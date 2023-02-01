@@ -184,6 +184,17 @@ let rs=null
     return { success: true, msg: 'OK', code: 0, "data": rs,total:total };
   }
 
+
+@All('/ManageMenuList')
+async ManageMenuList(@Body() params: {}, @Query() query: {})
+{
+  let MenuDb:any=await this.dbopService.name("menu").pagesize(1000).page(1).order("sort asc").select()
+let WebMenu=[]
+  common.GenTree(WebMenu,MenuDb,"children")
+                                 
+  return { success: true, msg: 'OK', code: 0, "data":WebMenu};
+}
+
   @All('/SaveEdit')
   async SaveEdit(@Body() params: {}, @Query() query: {}) {
     let param = Object.assign(params, query)
@@ -841,6 +852,7 @@ let admin = await this.dbopService.name("admin").where(where, [params["username"
 
 if(admin==null)
 {
+  
   return {"status":"error","type":"account","currentAuthority":"admin"};
 }
 
@@ -893,13 +905,13 @@ let menu=[
         },
         {
           name: 'register-result',
-          icon: 'smile',
+          icon: 'SmileOutlined',
           path: '/user/register-result',
           component: './user/register-result',
         },
         {
           name: 'register',
-          icon: 'smile',
+          icon: 'SmileOutlined',
           path: '/user/register',
           component: './user/register',
         },
@@ -911,7 +923,7 @@ let menu=[
     {
       path: '/dashboard',
       name: 'dashboard',
-      icon: 'dashboard',
+      icon: 'DashboardOutlined',
       routes: [
         {
           path: '/dashboard',
@@ -921,25 +933,25 @@ let menu=[
         
         {
           name: 'analysis',
-          icon: 'smile',
+          icon: 'SmileOutlined',
           path: '/dashboard/analysis/1',
           component: './dashboard/analysis',
         },
         {
           name: 'analysis2',
-          icon: 'smile',
+          icon: 'SmileOutlined',
           path: '/dashboard/analysis/2',
           component: './dashboard/analysis',
         },
         {
           name: 'monitor',
-          icon: 'smile',
+          icon: 'SmileOutlined',
           path: '/dashboard/monitor',
           component: './dashboard/monitor',
         },
         {
           name: 'workplace',
-          icon: 'smile',
+          icon: 'SmileOutlined',
           path: '/dashboard/workplace',
           component: './dashboard/workplace',
         },
@@ -947,7 +959,7 @@ let menu=[
     },
     {
       path: '/form',
-      icon: 'form',
+      icon: 'FormOutlined',
       name: 'form',
       routes: [
         {
@@ -956,19 +968,19 @@ let menu=[
         },
         {
           name: 'basic-form',
-          icon: 'smile',
+          icon: 'SmileOutlined',
           path: '/form/basic-form',
           component: './form/basic-form',
         },
         {
           name: 'step-form',
-          icon: 'smile',
+          icon: 'SmileOutlined',
           path: '/form/step-form',
           component: './form/step-form',
         },
         {
           name: 'advanced-form',
-          icon: 'smile',
+          icon: 'SmileOutlined',
           path: '/form/advanced-form',
           component: './form/advanced-form',
         },
@@ -976,7 +988,7 @@ let menu=[
     },
     {
       path: '/list',
-      icon: 'table',
+      icon: 'TableOutlined',
       name: 'list',
       routes: [
         {
@@ -990,19 +1002,19 @@ let menu=[
             },
             {
               name: 'articles',
-              icon: 'smile',
+              icon: 'SmileOutlined',
               path: '/list/search/articles',
               component: './list/search/articles',
             },
             {
               name: 'projects',
-              icon: 'smile',
+              icon: 'SmileOutlined',
               path: '/list/search/projects',
               component: './list/search/projects',
             },
             {
               name: 'applications',
-              icon: 'smile',
+              icon: 'SmileOutlined',
               path: '/list/search/applications',
               component: './list/search/applications',
             },
@@ -1014,19 +1026,19 @@ let menu=[
         },
         {
           name: 'table-list',
-          icon: 'smile',
+          icon: 'SmileOutlined',
           path: '/list/table-list',
           component: './list/table-list',
         },
         {
           name: 'basic-list',
-          icon: 'smile',
+          icon: 'SmileOutlined',
           path: '/list/basic-list',
           component: './list/basic-list',
         },
         {
           name: 'card-list',
-          icon: 'smile',
+          icon: 'SmileOutlined',
           path: '/list/card-list',
           component: './list/card-list',
         },
@@ -1035,7 +1047,7 @@ let menu=[
     {
       path: '/profile',
       name: 'profile',
-      icon: 'profile',
+      icon: 'ProfileOutlined',
       routes: [
         {
           path: '/profile',
@@ -1043,13 +1055,13 @@ let menu=[
         },
         {
           name: 'basic',
-          icon: 'smile',
+          icon: 'SmileOutlined',
           path: '/profile/basic',
           component: './profile/basic',
         },
         {
           name: 'advanced',
-          icon: 'smile',
+          icon: 'SmileOutlined',
           path: '/profile/advanced',
           component: './profile/advanced',
         },
@@ -1066,13 +1078,13 @@ let menu=[
         },
         {
           name: 'success',
-          icon: 'smile',
+          icon: 'SmileOutlined',
           path: '/result/success',
           component: './result/success',
         },
         {
           name: 'fail',
-          icon: 'smile',
+          icon: 'SmileOutlined',
           path: '/result/fail',
           component: './result/fail',
         },
@@ -1080,7 +1092,7 @@ let menu=[
     },
     {
       name: 'exception',
-      icon: 'warning',
+      icon: 'WarningOutlined',
       path: '/exception',
       routes: [
         {
@@ -1089,19 +1101,19 @@ let menu=[
         },
         {
           name: '403',
-          icon: 'smile',
+          icon: 'SmileOutlined',
           path: '/exception/403',
           component: './exception/403',
         },
         {
           name: '404',
-          icon: 'smile',
+          icon: 'SmileOutlined',
           path: '/exception/404',
           component: './exception/404',
         },
         {
           name: '500',
-          icon: 'smile',
+          icon: 'SmileOutlined',
           path: '/exception/500',
           component: './exception/500',
         },
@@ -1109,7 +1121,7 @@ let menu=[
     },
     {
       name: 'account',
-      icon: 'user',
+      icon: 'UserOutlined',
       path: '/account',
       routes: [
         {
@@ -1118,13 +1130,13 @@ let menu=[
         },
         {
           name: 'center',
-          icon: 'smile',
+          icon: 'SmileOutlined',
           path: '/account/center',
           component: './account/center',
         },
         {
           name: 'settings',
-          icon: 'smile',
+          icon: 'SmileOutlined',
           path: '/account/settings',
           component: './account/settings',
         },
@@ -1132,7 +1144,7 @@ let menu=[
     },
     {
       name: 'editor',
-      icon: 'highlight',
+      icon: 'BarChartOutlined',
       path: '/editor',
       routes: [
         {
@@ -1141,103 +1153,76 @@ let menu=[
         },
         {
           name: 'flow',
-          icon: 'smile',
+          icon: 'SmileOutlined',
           path: '/editor/flow',
           component: './editor/flow',
         },
         {
           name: 'mind',
-          icon: 'smile',
+          icon: 'SmileOutlined',
           path: '/editor/mind',
           component: './editor/mind',
         },
         {
           name: 'koni',
-          icon: 'smile',
+          icon: 'SmileOutlined',
           path: '/editor/koni',
           component: './editor/koni',
         },
       ],
     },
   
-    {
-      name: 'sys',
-      icon: 'UserAddOutlined',
-      path: '/sys',
-     // component: './custom',
-  
-      routes: [
-        {
-          name: 'iframe',
-          icon: 'smile',
-          path: '/sys/iframe/%2Fvisual%2Fpreview.html%3Fpage_id%3D2',
-         
-          component: './sys/iframe',
-        },
-        {
-          name: 'menu',
-          icon: 'smile',
-          path: '/sys/iframe/%2Fvisual%2Fpreview.html%3Fpage_id%3D6',
-         
-          component: './sys/iframe',
-        },
-      ]
-    },
+
     {
       name: 'custom',
       icon: 'UserAddOutlined',
       path: '/custom',
-     // component: './custom',
+     component: './custom',
   
       routes: [
         {
           name: 'basic',
-          icon: 'smile',
+          icon: 'SmileOutlined',
           path: '/custom/basic',
           component: './custom/basic',
         },
         {
           name: 'layout',
-          icon: 'smile',
+          icon: 'SmileOutlined',
           path: '/custom/layout',
           component: './custom/layout',
         },
         {
           name: 'table',
-          icon: 'smile',
+          icon: 'SmileOutlined',
           path: '/custom/table',
           component: './custom/table',
         },
         {
           name: 'login',
-          icon: 'smile',
+          icon: 'SmileOutlined',
           path: '/custom/login',
           component: './custom/login',
         },
         {
           name: 'reg',
-          icon: 'smile',
+          icon: 'SmileOutlined',
           path: '/custom/reg',
           component: './custom/reg',
         },
         {
           name: 'change',
-          icon: 'smile',
+          icon: 'SmileOutlined',
           path: '/custom/change',
           component: './custom/change',
         },
       ]
   
     },
-    {
-      name: 'event',
-      icon: 'UserAddOutlined',
-      path: '/event',
-      component: './event',
-    },
+
     {
       path: '/',
-      redirect: '/dashboard/analysis/1',
+      redirect: '/dashboard/analysis/2',  //默认页无效 客户端有效
     },
     {
       component: '404',
@@ -1245,16 +1230,50 @@ let menu=[
   ];
 
 
- let MenuDb:any=await this.dbopService.name("menu").fields("name,path,pid,id,component").where("status=?",[1]).order("sort asc").pagesize(1000).select()
+ let MenuDb:any=await this.dbopService.name("menu").fields("name,url,menu_type,title,path,pid,id,component,icon").where("status=?",[1]).order("sort asc").pagesize(1000).select()
  //console.log("MenuDb",MenuDb)
  for(let i in MenuDb)
  {
  // MenuDb[i]["component"]=' ./event'
-  MenuDb[i]["path"]="/"+MenuDb[i]["name"]
+ //MenuDb[i]["path"]=MenuDb[i]["name"]
+if(MenuDb[i]["menu_type"]=="iframe" && MenuDb[i]["pid"]>0)
+MenuDb[i]["path"]="/sys/iframe/"+encodeURIComponent(MenuDb[i]["url"])
+if(MenuDb[i]["icon"]==null || MenuDb[i]["icon"]=="")
+{
+delete MenuDb[i]["icon"]
+}
+
+if(MenuDb[i]["path"]==null || MenuDb[i]["path"]=="")
+MenuDb[i]["path"]=MenuDb[i]["name"]
+if(MenuDb[i]["title"]!=null && MenuDb[i]["title"]!="")
+MenuDb[i]["name"]=MenuDb[i]["title"]
+//+encodeURIComponent(MenuDb[i]["url"])
+ ///visual/preview.html?page_id=6
+
  }
  let WebMenu=[]
-common.GenTree(WebMenu,MenuDb)
+//common.GenTree(WebMenu,MenuDb)
+let MenuDb2=JSON.parse(JSON.stringify(MenuDb))
+for(let i in MenuDb)
+{
+  let level1=JSON.parse(JSON.stringify(MenuDb[i]))
+  if(level1["pid"]==-1)
+  {
+    let children=[]
+    for(let j in MenuDb2)
+    {
+      if(MenuDb2[j]["pid"]==level1["id"])
+      {
+        children.push(MenuDb2[j])
+      }
+    }
+    if(children.length>0)
+    level1["routes"]=children
+            
+    WebMenu.push(level1)
+  }
 
+}
  menu=menu.concat(WebMenu)
  return menu;
 }

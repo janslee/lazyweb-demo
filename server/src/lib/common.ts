@@ -86,7 +86,7 @@ static FormatDate =( date:Date=new Date())=>{
 
 //多级分类 根据list生成多级分类 children  
  
- static GenTree=(rs:Array<any>,data:Array<any>)=>
+ static GenTree=(rs:Array<any>,data:Array<any>,ChildName:string="routes")=>
 {
     if(data==null)
       return
@@ -115,8 +115,8 @@ static FormatDate =( date:Date=new Date())=>{
         }    
       if (children.length>0)
    {
-         common.GenTree(children,data)
-        x["routes"]=children
+         common.GenTree(children,data,ChildName)
+        x[ChildName]=children
         rs[i]=x
     }
       else
