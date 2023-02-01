@@ -192,7 +192,7 @@ async ManageMenuList(@Body() params: {}, @Query() query: {})
 let WebMenu=[]
   common.GenTree(WebMenu,MenuDb,"children")
                                  
-  return { success: true, msg: 'OK', code: 0, "data":WebMenu};
+  return { success: true, msg: '加载数据成功', code: 0, "data":WebMenu};
 }
 
   @All('/SaveEdit')
