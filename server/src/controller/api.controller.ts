@@ -223,7 +223,7 @@ if(table!=null && table!="")
      rs = await this.dbopService.name(table_name).insert(params) 
    }
    
-     return { success: true, msg: 'OK', code: 0, "data": rs };
+     return { success: true, msg: '保存数据成功', code: 0, "data": rs };
   }
 
 
