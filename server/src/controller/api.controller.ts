@@ -65,7 +65,7 @@ export class APIController {
     let where = "id =? "
 
     let rs = await this.dbopService.name("page").where(where, [param["page_id"]]).find()
-    return { success: true, msg: 'OK', code: 0, "data": rs };
+    return { success: true, msg: '获取页面数据成功', code: 0, "data": rs };
   }
 
 
@@ -162,7 +162,9 @@ let rs=null
      let order ="id desc"
      if(param?.field!=null && param?.field!="")
      {
-      order =param?.field+" "+param?.order
+      order =param?.field
+      if(param?.order!=null && param?.order!="")
+      order+=" "+param?.order
       order=order.replace("end","")
       
      }
@@ -181,7 +183,7 @@ let rs=null
   rs = await this.dbopService.table(table).pagesize(pageSize).page(page).order(order).where(where, p).select()
  total=await this.dbopService.table(table).where(where, p).count("*")
 }
-    return { success: true, msg: 'OK', code: 0, "data": rs,total:total };
+    return { success: true, msg: '获取数据成功', code: 0, "data": rs,total:total };
   }
 
 
@@ -189,11 +191,20 @@ let rs=null
 async ManageMenuList(@Body() params: {}, @Query() query: {})
 {
   let MenuDb:any=await this.dbopService.name("menu").pagesize(1000).page(1).order("sort asc").select()
-let WebMenu=[]
+  MenuDb=MenuDb.map((item:any)=>{
+    item["label"]=item["title"]
+    item["value"]=item["id"]
+    return item
+  })
+  let WebMenu=[]
   common.GenTree(WebMenu,MenuDb,"children")
                                  
   return { success: true, msg: '加载数据成功', code: 0, "data":WebMenu};
 }
+
+
+
+
 
   @All('/SaveEdit')
   async SaveEdit(@Body() params: {}, @Query() query: {}) {
@@ -1216,6 +1227,18 @@ let menu=[
           path: '/custom/change',
           component: './custom/change',
         },
+        {
+          name: 'visual',
+          icon: 'SmileOutlined',
+          path: '/custom/visual/1',
+          component: './custom/visual',
+        },
+        {
+          name: 'basictable',
+          icon: 'SmileOutlined',
+          path: '/custom/basictable',
+          component: './custom/basictable',
+        },
       ]
   
     },
@@ -1249,7 +1272,8 @@ if(MenuDb[i]["title"]!=null && MenuDb[i]["title"]!="")
 MenuDb[i]["name"]=MenuDb[i]["title"]
 //+encodeURIComponent(MenuDb[i]["url"])
  ///visual/preview.html?page_id=6
-
+ if(MenuDb[i]["menu_type"]=="tab" && MenuDb[i]["pid"]>0)
+ delete MenuDb[i]["component"]
  }
  let WebMenu=[]
 //common.GenTree(WebMenu,MenuDb)

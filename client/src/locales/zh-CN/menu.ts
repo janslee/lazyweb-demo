@@ -47,6 +47,7 @@ export default {
   'menu.account.logout': '退出登录',
   'menu.editor': '图形编辑器',
   'menu.custom': '自定义页面',
+  'menu.custom.basictable': '基础表格',
   'menu.sys': '系统管理',
   'menu.sys.iframe': '包含页',
   'menu.event': '事件',

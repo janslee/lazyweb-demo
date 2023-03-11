@@ -333,6 +333,18 @@
         path: '/custom/change',
         component: './custom/change',
       },
+      {
+        name: 'visual',
+        icon: 'SmileOutlined',
+        path: '/custom/visual/:page_id',
+        component: './custom/visual',
+      },
+      {
+        name: 'visual',
+        icon: 'SmileOutlined',
+        path: '/custom/basictable',
+        component: './custom/basictable',
+      },
     ]
 
   },
