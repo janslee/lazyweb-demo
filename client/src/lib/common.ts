@@ -138,6 +138,10 @@ static FormatDate =( date:Date=new Date())=>{
 
     }
 
+ //判断是否是数组
+static   isArray = (v:any)=>{
+  return toString.apply(v) === '[object Array]';
+  }
 
      //使用promise封装fetch
      static     post=async (url:string,data:any)=> {
@@ -156,6 +160,41 @@ static FormatDate =( date:Date=new Date())=>{
       })
     }
    
+    static getCookie(key: string): string | number | undefined {
+      const name = key + "=";
+      const ca = document.cookie.split(";");
+      for (let i = 0; i < ca.length; i++) {
+        const c = ca[i].trim();
+        if (c.indexOf(name) == 0) {
+          return c.substring(name.length, c.length);
+        }
+      }
+      return undefined;
+    }
+  
+    /**
+     * 设置cookie
+     * @param key cookie名称/键名
+     * @param value cookie值
+     * @param exp cookie到期时间戳
+     * 无效 原因未知
+     */
+    static setCookie(key: string, value: string | number, Days: number=1) {
+
+      var exp = new Date();
+exp.setTime(exp.getTime() + Days*24*60*60*1000);
+      const expires = "expires=" + exp.toUTCString();
+     
+      return (document.cookie =document.cookie+";"+ key + "=" + value + "; " + expires);
+    }
+  
+    /**
+     * 删除cookie
+     * @param key cookie名称/键名
+     */
+    static deleteCookie(key: string) {
+      return (document.cookie = `${key}=; expires=Thu, 01 Jan 1970 00:00:00 GMT`);
+    }
 
  }
 

@@ -140,6 +140,24 @@ static GenUUID=(filename):string=>{
 return common.unixtime13().toString()+ext
 }
 
+ //判断是否是数组
+ static   isArray = (v:any)=>{
+  return toString.apply(v) === '[object Array]';
+  }
+
+  static RandomString(length: number)  {
+    let outString: string = '';
+    let inOptions: string = 'abcdefghijklmnopqrstuvwxyz0123456789';
+
+    for (let i = 0; i < length; i++) {
+
+      outString += inOptions.charAt(Math.floor(Math.random() * inOptions.length));
+
+    }
+
+    return outString;
+  }
+
 
  }
    

@@ -19,11 +19,13 @@ const loginPath = '/user/login';
 
 import * as icons from '@ant-design/icons'
 import React from 'react';
+import { common } from './lib/common';
 
 let admin:any={}
 //拦截器
 const authHeaderInterceptor = (url: string, options: RequestOptionsInit) => {
   let authHeader:any={}
+
   console.log("请求",url,options)
    if(admin!=null && admin?.token!=null)
    authHeader = { Authorization: 'Bearer '+admin?.token };
@@ -57,13 +59,20 @@ const demoResponseInterceptors = (response: Response, options: RequestOptionsIni
       }
      
       else
-      localStorage.setItem("token",token)
+      {
+        localStorage.setItem("token",token)
+       // common.setCookie("token",token)
+      }
+     
      // console.log("写入token")
     }
    
   }
   return response;
 };
+
+
+
 
 export const request: RequestConfig = {
  // errorHandler,

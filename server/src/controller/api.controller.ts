@@ -90,7 +90,11 @@ let rs=null
     table=param?.table
     rs = await this.dbopService.table(table).where(where, [id]).find()
   }
-  
+    if(rs!=null && table=="admin")
+    {
+      rs["password"]=""
+      delete rs["login_salt"]
+    }
     return { success: true, msg: 'OK', code: 0, "data": rs };
   }
 
@@ -108,7 +112,7 @@ let rs=null
     let where = "id >? "
     let p=["0"]
 
-    console.log("filters",param?.filters)
+    //console.log("filters",param?.filters)
   if(param?.filters!=null)
   {
     const filters=param?.filters
@@ -183,7 +187,21 @@ let rs=null
   rs = await this.dbopService.table(table).pagesize(pageSize).page(page).order(order).where(where, p).select()
  total=await this.dbopService.table(table).where(where, p).count("*")
 }
-    return { success: true, msg: '获取数据成功', code: 0, "data": rs,total:total };
+let data=[]
+if(rs!=null && table=="admin")
+{
+  for(let i in rs)
+  {
+    let row=rs[i]
+     row["password"]=""
+    delete row["login_salt"]
+    data.push(row)
+  }
+ 
+}
+else
+data=rs
+    return { success: true, msg: '获取数据成功', code: 0, "data": data,total:total };
   }
 
 
@@ -204,7 +222,42 @@ async ManageMenuList(@Body() params: {}, @Query() query: {})
 
 
 
+//获取某个角色订单权限
+@All('/GetManageMenu')
+async GetManageMenu(@Body() params: {}, @Query() query: {})
+{
+  let param:any = Object.assign(params, query)
 
+
+let role_id=param?.id
+
+//let role=await this.dbopService.name("role").where("id>=?",[role_id]).select()
+
+let rs:any=[]
+if(role_id>1)
+ rs=await this.dbopService.name("role_menu").where("role_id=?",[role_id]).select()
+else
+rs=await this.dbopService.name("role_menu").where("role_id>=?",[0]).select()
+
+ let menu_ids=[]
+if(rs !=null && common.isArray(rs))
+{
+for(let i in rs)
+{
+  menu_ids.push(rs[i].menu_id)
+}
+}
+let data={"role_menu":menu_ids}
+return { success: true, msg: '加载数据成功', code: 0,data:data };
+}
+
+//保存角色订单权限
+@All('/SaveManageMenu')
+async SaveManageMenu(@Body() params: {}, @Query() query: {})
+{
+let admin=this.ctx.state.user;
+return { success: true, msg: '加载数据成功', code: 0, "data":admin};
+}
 
   @All('/SaveEdit')
   async SaveEdit(@Body() params: {}, @Query() query: {}) {
@@ -235,6 +288,27 @@ if(table!=null && table!="")
    }
    
      return { success: true, msg: '保存数据成功', code: 0, "data": rs };
+  }
+
+  @All('/SaveRoleMenu')
+  async SaveRoleMenu(@Body() params: {}, @Query() query: {}) {
+    let param = Object.assign(params, query)
+    let role_menu=param["role_menu"]
+    let role_id=param["id"]
+    if(role_menu==null || role_menu=="")
+    {
+      return { success: true, msg: '没有需要保存的数据', code: 1, "data": {} };
+    }
+    let role_menu_arr=role_menu.split(",")
+    console.log("角色id",role_id,role_menu_arr)
+    await this.dbopService.name("role_menu").where("role_id=?", [role_id]).delete()
+    for(let i in role_menu_arr)
+    {
+      let menu_id=role_menu_arr[i]
+      await this.dbopService.name("role_menu").insert({role_id:role_id,menu_id:menu_id,add_time:common.unixtime10()})
+    }
+    
+     return { success: true, msg: '保存数据成功', code: 0, "data": {} };
   }
 
 
@@ -878,13 +952,15 @@ where="username=?"
 let t:string=common.unixtime10()
 let num=await this.dbopService.name("admin").where(where, [params["username"]]).update({"login_time":t})
 
-console.log("更新的行数",typeof(num),num)
+console.log("更新登录的行数",typeof(num),num)
 delete admin["password"]
+delete admin["login_salt"]
 admin["status"]="ok"
 admin["currentAuthority"]="admin"
 
 const token:string=await this.jwt.sign(admin)
 admin["token"]=token
+this.ctx.cookies.set('token', token, { encrypt: false });
 return admin;
 }
 
@@ -1239,6 +1315,12 @@ let menu=[
           path: '/custom/basictable',
           component: './custom/basictable',
         },
+        {
+          name: 'select',
+          icon: 'SmileOutlined',
+          path: '/custom/select',
+          component: './custom/select',
+        },
       ]
   
     },
@@ -1253,7 +1335,28 @@ let menu=[
   ];
 
 
- let MenuDb:any=await this.dbopService.name("menu").fields("name,url,menu_type,title,path,pid,id,component,icon").where("status=?",[1]).order("sort asc").pagesize(1000).select()
+let admin=this.ctx.state.user;
+let role_id=admin.role_id
+let MenuDb:any=[]
+if(role_id>1)
+{
+
+ let  menus:any=await this.dbopService.name("role_menu").fields("menu_id").where("role_id=?",[role_id]).pagesize(1000).select()
+if (menus==null || menus.length==0)
+{
+  MenuDb=[]
+}
+else
+{
+  const menu_ids = menus.map(record => record.menu_id);
+  MenuDb=await this.dbopService.name("menu").fields("name,url,menu_type,title,path,pid,id,component,icon").where("id in ? ",[menu_ids]).order("sort asc").pagesize(1000).select()
+
+}
+}
+ else
+ {
+   MenuDb=await this.dbopService.name("menu").fields("name,url,menu_type,title,path,pid,id,component,icon").where("status=?",[1]).order("sort asc").pagesize(1000).select()
+ }
  //console.log("MenuDb",MenuDb)
  for(let i in MenuDb)
  {
@@ -1540,6 +1643,7 @@ for(let i in MenuDb)
 
   @All('/login/outLogin')
   async outLogin() {
+    this.ctx.cookies.set('token',"", { })
     return {
       success:true,
       data:{},
@@ -1552,7 +1656,24 @@ for(let i in MenuDb)
    return {"data":[{"key":99,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/udxAbMEhpwthVVcjLXik.png","name":"TradeCode 99","owner":"曲丽丽","desc":"这是一段描述","callNo":736,"status":"1","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":20},{"key":98,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/eeHMaZBwmTvLdIwMfBpg.png","name":"TradeCode 98","owner":"曲丽丽","desc":"这是一段描述","callNo":171,"status":"0","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":64},{"key":97,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/udxAbMEhpwthVVcjLXik.png","name":"TradeCode 97","owner":"曲丽丽","desc":"这是一段描述","callNo":527,"status":"0","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":79},{"key":96,"disabled":true,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/eeHMaZBwmTvLdIwMfBpg.png","name":"TradeCode 96","owner":"曲丽丽","desc":"这是一段描述","callNo":756,"status":"0","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":73},{"key":95,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/udxAbMEhpwthVVcjLXik.png","name":"TradeCode 95","owner":"曲丽丽","desc":"这是一段描述","callNo":923,"status":"2","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":53},{"key":94,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/eeHMaZBwmTvLdIwMfBpg.png","name":"TradeCode 94","owner":"曲丽丽","desc":"这是一段描述","callNo":296,"status":"0","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":38},{"key":93,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/udxAbMEhpwthVVcjLXik.png","name":"TradeCode 93","owner":"曲丽丽","desc":"这是一段描述","callNo":705,"status":"2","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":13},{"key":92,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/eeHMaZBwmTvLdIwMfBpg.png","name":"TradeCode 92","owner":"曲丽丽","desc":"这是一段描述","callNo":559,"status":"0","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":100},{"key":91,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/udxAbMEhpwthVVcjLXik.png","name":"TradeCode 91","owner":"曲丽丽","desc":"这是一段描述","callNo":195,"status":"0","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":97},{"key":90,"disabled":true,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/eeHMaZBwmTvLdIwMfBpg.png","name":"TradeCode 90","owner":"曲丽丽","desc":"这是一段描述","callNo":700,"status":"3","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":55},{"key":89,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/udxAbMEhpwthVVcjLXik.png","name":"TradeCode 89","owner":"曲丽丽","desc":"这是一段描述","callNo":990,"status":"3","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":71},{"key":88,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/eeHMaZBwmTvLdIwMfBpg.png","name":"TradeCode 88","owner":"曲丽丽","desc":"这是一段描述","callNo":443,"status":"1","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":40},{"key":87,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/udxAbMEhpwthVVcjLXik.png","name":"TradeCode 87","owner":"曲丽丽","desc":"这是一段描述","callNo":687,"status":"3","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":39},{"key":86,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/eeHMaZBwmTvLdIwMfBpg.png","name":"TradeCode 86","owner":"曲丽丽","desc":"这是一段描述","callNo":312,"status":"1","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":52},{"key":85,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/udxAbMEhpwthVVcjLXik.png","name":"TradeCode 85","owner":"曲丽丽","desc":"这是一段描述","callNo":529,"status":"2","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":44},{"key":84,"disabled":true,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/eeHMaZBwmTvLdIwMfBpg.png","name":"TradeCode 84","owner":"曲丽丽","desc":"这是一段描述","callNo":504,"status":"1","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":9},{"key":83,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/udxAbMEhpwthVVcjLXik.png","name":"TradeCode 83","owner":"曲丽丽","desc":"这是一段描述","callNo":426,"status":"1","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":34},{"key":82,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/eeHMaZBwmTvLdIwMfBpg.png","name":"TradeCode 82","owner":"曲丽丽","desc":"这是一段描述","callNo":987,"status":"1","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":79},{"key":81,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/udxAbMEhpwthVVcjLXik.png","name":"TradeCode 81","owner":"曲丽丽","desc":"这是一段描述","callNo":554,"status":"2","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":98},{"key":80,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/eeHMaZBwmTvLdIwMfBpg.png","name":"TradeCode 80","owner":"曲丽丽","desc":"这是一段描述","callNo":300,"status":"2","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":46}],"total":100,"success":true,"pageSize":20,"current":1}
   }
 
-
+  @All('/CopyPage')
+  async CopyPage(@Body() params: {}, @Query() query: {}) {
+    let param = Object.assign(params, query)
+    let page_id = param["id"] != null ? param["id"] : 0
+    if(page_id<=0)
+    {
+      return {"code":1,success:false,"msg":"参数错误"}
+    }
+let page=await   this.dbopService.name("page").where("id=?", [page_id]).find()
+if(page!=null)
+{
+delete page["id"]
+page["name"]=page["name"]+"-副本"
+page["add_time"]=common.unixtime10()
+await   this.dbopService.name("page").insert(page)
+}
+ return {"code":0,success:true,"msg":"复制成功"}
+}
   @All('/list')
   async list(@Body() params: {}) {
 //let page=params["page"]!=null?params["page"]:1
@@ -1560,6 +1681,34 @@ for(let i in MenuDb)
 
    return {"data":[{"key":99,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/udxAbMEhpwthVVcjLXik.png","name":"TradeCode 99","owner":"曲丽丽","desc":"这是一段描述","callNo":736,"status":"1","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":20},{"key":98,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/eeHMaZBwmTvLdIwMfBpg.png","name":"TradeCode 98","owner":"曲丽丽","desc":"这是一段描述","callNo":171,"status":"0","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":64},{"key":97,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/udxAbMEhpwthVVcjLXik.png","name":"TradeCode 97","owner":"曲丽丽","desc":"这是一段描述","callNo":527,"status":"0","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":79},{"key":96,"disabled":true,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/eeHMaZBwmTvLdIwMfBpg.png","name":"TradeCode 96","owner":"曲丽丽","desc":"这是一段描述","callNo":756,"status":"0","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":73},{"key":95,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/udxAbMEhpwthVVcjLXik.png","name":"TradeCode 95","owner":"曲丽丽","desc":"这是一段描述","callNo":923,"status":"2","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":53},{"key":94,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/eeHMaZBwmTvLdIwMfBpg.png","name":"TradeCode 94","owner":"曲丽丽","desc":"这是一段描述","callNo":296,"status":"0","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":38},{"key":93,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/udxAbMEhpwthVVcjLXik.png","name":"TradeCode 93","owner":"曲丽丽","desc":"这是一段描述","callNo":705,"status":"2","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":13},{"key":92,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/eeHMaZBwmTvLdIwMfBpg.png","name":"TradeCode 92","owner":"曲丽丽","desc":"这是一段描述","callNo":559,"status":"0","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":100},{"key":91,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/udxAbMEhpwthVVcjLXik.png","name":"TradeCode 91","owner":"曲丽丽","desc":"这是一段描述","callNo":195,"status":"0","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":97},{"key":90,"disabled":true,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/eeHMaZBwmTvLdIwMfBpg.png","name":"TradeCode 90","owner":"曲丽丽","desc":"这是一段描述","callNo":700,"status":"3","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":55},{"key":89,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/udxAbMEhpwthVVcjLXik.png","name":"TradeCode 89","owner":"曲丽丽","desc":"这是一段描述","callNo":990,"status":"3","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":71},{"key":88,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/eeHMaZBwmTvLdIwMfBpg.png","name":"TradeCode 88","owner":"曲丽丽","desc":"这是一段描述","callNo":443,"status":"1","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":40},{"key":87,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/udxAbMEhpwthVVcjLXik.png","name":"TradeCode 87","owner":"曲丽丽","desc":"这是一段描述","callNo":687,"status":"3","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":39},{"key":86,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/eeHMaZBwmTvLdIwMfBpg.png","name":"TradeCode 86","owner":"曲丽丽","desc":"这是一段描述","callNo":312,"status":"1","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":52},{"key":85,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/udxAbMEhpwthVVcjLXik.png","name":"TradeCode 85","owner":"曲丽丽","desc":"这是一段描述","callNo":529,"status":"2","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":44},{"key":84,"disabled":true,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/eeHMaZBwmTvLdIwMfBpg.png","name":"TradeCode 84","owner":"曲丽丽","desc":"这是一段描述","callNo":504,"status":"1","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":9},{"key":83,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/udxAbMEhpwthVVcjLXik.png","name":"TradeCode 83","owner":"曲丽丽","desc":"这是一段描述","callNo":426,"status":"1","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":34},{"key":82,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/eeHMaZBwmTvLdIwMfBpg.png","name":"TradeCode 82","owner":"曲丽丽","desc":"这是一段描述","callNo":987,"status":"1","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":79},{"key":81,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/udxAbMEhpwthVVcjLXik.png","name":"TradeCode 81","owner":"曲丽丽","desc":"这是一段描述","callNo":554,"status":"2","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":98},{"key":80,"disabled":false,"href":"https://ant.design","avatar":"https://gw.alipayobjects.com/zos/rmsportal/eeHMaZBwmTvLdIwMfBpg.png","name":"TradeCode 80","owner":"曲丽丽","desc":"这是一段描述","callNo":300,"status":"2","updatedAt":"2022-12-11T12:15:03.693Z","createdAt":"2022-12-11T12:15:03.693Z","progress":46}],"total":100,"success":true,"pageSize":20,"current":1}
   
+  }
+
+
+  @All('/SaveAdmin')
+  async SaveAdmin(@Body() params: {}, @Query() query: {}) {
+    let param:any = Object.assign(params, query)
+    let result=null
+    if(param?.password!=null && param?.password!="") 
+    {
+      param["login_salt"]=common.RandomString(6)
+      param.password=common.pwd(param.password,param["login_salt"])
+    }
+    
+    if (param?.id) {
+    let  id=param.id
+      delete param["id"]
+     result = await await this.dbopService.name("admin").where("id=?", [id]).update(params)
+    }
+    else
+    {
+      result = await await this.dbopService.name("admin").insert(params)
+    }
+ return {
+      success:true,
+      code:0,
+      data:result,
+      msg:"保存成功"
+    };
   }
 
 }

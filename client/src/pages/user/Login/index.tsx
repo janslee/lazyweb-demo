@@ -15,6 +15,7 @@ import { login } from '@/services/ant-design-pro/api';
 import { getFakeCaptcha } from '@/services/ant-design-pro/login';
 
 import styles from './index.less';
+import { common } from '@/lib/common';
 
 const LoginMessage: React.FC<{
   content: string;
@@ -57,6 +58,7 @@ const Login: React.FC = () => {
         });
         message.success(defaultLoginSuccessMessage);
         localStorage.setItem("token",msg?.token)
+       // common.setCookie("token",msg?.token)
         await fetchUserInfo({"token":msg?.token});
         /** 此方法会跳转到 redirect 参数所在的位置 */
         if (!history) return;

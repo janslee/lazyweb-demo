@@ -340,10 +340,16 @@
         component: './custom/visual',
       },
       {
-        name: 'visual',
+        name: 'basictable',
         icon: 'SmileOutlined',
         path: '/custom/basictable',
         component: './custom/basictable',
+      },
+      {
+        name: 'select',
+        icon: 'SmileOutlined',
+        path: '/custom/select',
+        component: './custom/select',
       },
     ]
 

@@ -5,11 +5,12 @@ import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import type { FilterValue, SorterResult } from 'antd/es/table/interface';
 import qs from 'qs';
 import { observable ,autorun} from '@formily/reactive'
-
+import { request } from 'umi';
 import { SearchOutlined } from '@ant-design/icons';
 import locale from 'antd/lib/date-picker/locale/zh_CN';
 import 'moment/locale/zh-cn'
 import moment from 'moment';
+import { common } from '@/lib/common';
 
 const { RangePicker } = DatePicker;
 interface TableParams {
@@ -194,20 +195,29 @@ const fetchData = () => {
   let data=getRandomuserParams(tableParams)
   //console.log("请求参数data",tableParams)
 data["search"]=searchParam
-  fetch(url,{
+/*
+request.post(url,{
     method: 'post',
     body: qs.stringify(data),
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded'
     }
   })
-
-
-      .then((res) => res.json())
+*/
+  request<{
+    msg: string;
+    code: number;
+    success: boolean;
+    data: any;
+  }>(url, {
+    method: 'POST',
+data:data
+  })
+ 
       .then((rs) => {
-       // console.log("数据",data)
-    // message.success(rs.msg)
-
+     //   console.log("数据",data)
+    message.success(rs?.msg)
+    if(common.isArray(rs.data))
      setData(rs.data);
        setLoading(false);
 

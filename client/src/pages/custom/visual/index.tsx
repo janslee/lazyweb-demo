@@ -28,7 +28,7 @@ import {
   FormLayout,
   FormTab,
   FormCollapse,
-  Select,
+
   ArrayTable,
 
   ArrayCards,
@@ -45,8 +45,8 @@ import  CTable from '../../../components/CTable'
 import  FormDialog from '../../../components/FormDialog'
 import  Dialog from '../../../components/Dialog'
 import  IconSelect from '../../../components/IconSelect'
-
-import { Card, Slider, Rate,Modal } from 'antd'
+import  Select  from   '../../../components/CSelect'
+import { Card, Slider, Rate,Modal  } from 'antd'
 
 
 import { eventBus } from '../../../lib/Provider'

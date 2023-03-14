@@ -17,19 +17,33 @@ export class JwtcustomMiddleware {
   resolve() {
     return async (ctx: Context, next: NextFunction) => {
       // 判断下有没有校验信息
-      if (!ctx.headers['authorization']) {
+      if (!ctx.headers['authorization']  &&   !ctx.cookies.get('token', { })  ) {
         throw new httpError.UnauthorizedError();
       }
+let token=""
+let scheme=null
+      if(ctx.headers['authorization'] )
+      {
       // 从 header 上获取校验信息
       const parts = ctx.get('authorization').trim().split(' ');
 
       if (parts.length !== 2) {
         throw new httpError.UnauthorizedError();
       }
-   
-      const [scheme, token] = parts;
 
-      if (/^Bearer$/i.test(scheme)) {
+      scheme=parts[0]
+      token=parts[1]
+
+    }
+    else
+    {
+      scheme=ctx.cookies.get('token', { })
+      token=scheme
+      //console.log("获取到的token",token)
+    }
+
+
+      if (token!=null  && token!="") {
 
         const d = new Date()
         let t=d.valueOf()
@@ -54,6 +68,7 @@ export class JwtcustomMiddleware {
          const newToken =await  this.jwtService.sign(user);
           //将新token放入Authorization中返回给前端
           ctx.set('token', newToken);
+          ctx.cookies.set('token',newToken, { })
           }
         
         } catch (error) {
@@ -69,10 +84,14 @@ export class JwtcustomMiddleware {
         // throw new httpError.UnauthorizedError();
         ctx.status=200
         ctx.set('token', "0");
+        ctx.cookies.set('token',"", { })
         ctx.body='{"success":false,"message":"验证超时，请重新登录","token":"0"}'
         return
         }
         await next();
+      }
+      else{
+        throw new httpError.UnauthorizedError();
       }
     };
   }

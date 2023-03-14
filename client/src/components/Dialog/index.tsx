@@ -8,6 +8,8 @@ export const Dialog = (props: any) => {
   const openModal = () => setModalVisible(true)
   const closeModal = () => setModalVisible(false)
 
+
+
   useEffect(() => {
 
 //console.log("弹窗参数",props)
@@ -53,12 +55,16 @@ export const Dialog = (props: any) => {
                 let row={}
                 for(let i in initialValues)
                 {
+                  if(i!="password" && i!="pwd" && i.indexOf("salt")<0  && i.indexOf("pwd")<0)
                   row[dialogPrefix+i]=initialValues[i]
+                  else
+                  row[dialogPrefix+i]=""
                 }
                // console.log("参数1",props)
               
                 let oldvalues=props?.$form?.values
               
+      
                 props?.$form.setValues({...oldvalues,...row})
           
               }
@@ -178,7 +184,7 @@ const preview=true
     
     <Modal
         title={props?.title}
-        width="70%"
+        width={props?.width}
       
         centered
         bodyStyle={{ padding: 10 }}
