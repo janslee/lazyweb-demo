@@ -100,7 +100,12 @@ export const Dialog = (props: any) => {
 
 function confirm()
 {
-
+  let valid=props?.$form.valid
+  if(!valid)
+  {
+    message.error("请检查输入的数据")
+    return 
+  }
 const valuse=props?.$form.values
 let dialogPrefix=props?.dialogPrefix
 if(dialogPrefix==null)
@@ -135,7 +140,7 @@ if (props?.dialogSaveApi != null && props?.dialogSaveApi != "") {
      {
    
       ExeConfirm(row)
-      message.success(results.msg)
+      //message.success(results.msg)
      }
     });
 
@@ -143,7 +148,7 @@ if (props?.dialogSaveApi != null && props?.dialogSaveApi != "") {
 }else if (props?.confirm != null && props?.confirm != ""  ) {
   ExeConfirm(row)
   }
-   
+  closeModal()
 }
 
 
@@ -195,7 +200,7 @@ const preview=true
         destroyOnClose={true}
         onOk={() => {
           confirm()
-          closeModal()
+         
         }}
       >
         {props.children}

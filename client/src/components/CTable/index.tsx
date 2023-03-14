@@ -216,7 +216,7 @@ data:data
  
       .then((rs) => {
      //   console.log("数据",data)
-    message.success(rs?.msg)
+   // message.success(rs?.msg)
     if(common.isArray(rs.data))
      setData(rs.data);
        setLoading(false);
@@ -389,7 +389,7 @@ if(CurrentUrl.indexOf("3000")>0)
           
           if(code==0)
           {
-            message.success(msg)
+           // message.success(msg)
             fetchData()
           }
      
