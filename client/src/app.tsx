@@ -40,7 +40,7 @@ const authHeaderInterceptor = (url: string, options: RequestOptionsInit) => {
 };
 //写入token
 const demoResponseInterceptors = (response: Response, options: RequestOptionsInit) => {
-  //response.headers.append('interceptors', 'yes yo');
+ //response.headers.append('interceptors', 'yes yo');
  if(response.status==401)
  {
   history.push("/user/login");
@@ -177,9 +177,13 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       },
       request: async (params, defaultMenuData) => {
         // initialState.currentUser 中包含了所有用户信息
-        const menuData:any = await fetchMenuData();
-        
+        let menuData:any =null
+       if(initialState?.currentUser?.userid!=null)
+       {
+        menuData = await fetchMenuData();
+       }
         return loopMenuItem(menuData); //转换图标icon
+    
       },
     },
 

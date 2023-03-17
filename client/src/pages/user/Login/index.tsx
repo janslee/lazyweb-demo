@@ -87,9 +87,9 @@ const Login: React.FC = () => {
       </div>
       <div className={styles.content}>
         <LoginForm
-          logo={<img alt="logo" src="/logo.svg" />}
-          title="LzyWeb"
-          subTitle={intl.formatMessage({ id: 'pages.layouts.userLayout.title' })}
+          logo={<img alt="logo" src="/logo2.png" />}
+          title="后台管理系统"
+          subTitle="pc版"
           initialValues={{
             autoLogin: true,
           }}
@@ -272,7 +272,7 @@ const Login: React.FC = () => {
               marginBottom: 24,
             }}
           >
-            <ProFormCheckbox noStyle name="autoLogin">
+            <ProFormCheckbox noStyle name="autoLogin"  >
               <FormattedMessage id="pages.login.rememberMe" defaultMessage="自动登录" />
             </ProFormCheckbox>
             <a

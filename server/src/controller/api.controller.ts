@@ -13,6 +13,9 @@ import { OSSService } from '@midwayjs/oss';
 @Controller('/api')
 export class APIController {
 
+
+
+
   @Inject()
   jwt: JwtService;
 
@@ -1338,6 +1341,7 @@ let menu=[
 let admin=this.ctx.state.user;
 let role_id=admin.role_id
 let MenuDb:any=[]
+//console.log("当前的角色",role_id)
 if(role_id>1)
 {
 
@@ -1368,11 +1372,16 @@ if(MenuDb[i]["icon"]==null || MenuDb[i]["icon"]=="")
 {
 delete MenuDb[i]["icon"]
 }
-
-if(MenuDb[i]["path"]==null || MenuDb[i]["path"]=="")
-MenuDb[i]["path"]=MenuDb[i]["name"]
 if(MenuDb[i]["title"]!=null && MenuDb[i]["title"]!="")
 MenuDb[i]["name"]=MenuDb[i]["title"]
+
+if(MenuDb[i]["path"]==null || MenuDb[i]["path"]=="")
+{
+  if(role_id==1)
+MenuDb[i]["path"]=MenuDb[i]["name"]
+}
+
+
 //+encodeURIComponent(MenuDb[i]["url"])
  ///visual/preview.html?page_id=6
  if(MenuDb[i]["menu_type"]=="tab" && MenuDb[i]["pid"]>0)
@@ -1409,7 +1418,7 @@ for(let i in MenuDb)
   @Get("/currentUser", { middleware: [JwtPassportMiddleware] })
   async currentUser(): Promise<string> {
     // 这里是 http 的返回，可以直接返回字符串，数字，JSON，Buffer 等
- let admin={}
+ let admin:any={}
  if(this.ctx.state.user!=null)
  {
   admin=this.ctx.state.user;
@@ -1423,8 +1432,8 @@ for(let i in MenuDb)
     {
       success: true,
       data: {
-        name: 'Serati Ma',
-        avatar: 'https://gw.alipayobjects.com/zos/antfincdn/XAosXuNZyF/BiazfanxmamNRoxxVxka.png',
+        name: admin.username,
+        avatar: admin.avatar,
         userid: '00000001',
         email: 'antdesign@alipay.com',
         signature: '海纳百川，有容乃大',
@@ -1690,10 +1699,12 @@ await   this.dbopService.name("page").insert(page)
     let result=null
     if(param?.password!=null && param?.password!="") 
     {
-      param["login_salt"]=common.RandomString(6)
+      param["login_salt"]=common.RandomString(8)
       param.password=common.pwd(param.password,param["login_salt"])
     }
-    
+    else
+    delete  param["password"]
+    //console.log("提交的信息为",param)
     if (param?.id) {
     let  id=param.id
       delete param["id"]
@@ -1710,5 +1721,120 @@ await   this.dbopService.name("page").insert(page)
       msg:"保存成功"
     };
   }
+//获取所有的表格视图字段
+@All('/DBList')
+async DBList(@Body() params: {}, @Query() query: {})
+{
+
+    let config= this.app.getConfig()
+    
+    let DataBaseConfig= config.mysql
+   return DataBaseConfig
+
+    /*
+  let sql = `SELECT * FROM information_schema.tables where TABLE_TYPE="BASE TABLE" and table_schema =? limit 300`
+  let tablesList = await this.dbopService.query(sql, [config.database])
+  sql = `SELECT * FROM information_schema.COLUMNS WHERE  table_schema =? `
+  let COLUMNS = await this.dbopService.db(pool).query(sql, [dbname])
+
+  //获取所有的外键信息
+  sql = `SELECT * FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE REFERENCED_COLUMN_NAME is not null and CONSTRAINT_NAME<>'PRIMARY' and constraint_schema=? `
+  let foreigns = await this.dbopService.db(pool).query(sql, [dbname])
+  let refs = []
+  refs = foreigns.map((item, index, array) => {
+    let row = { "name": item["TABLE_NAME"],"id": item["TABLE_NAME"] }
+    let endpoints = []
+    endpoints.push({ "fieldNames": [item["COLUMN_NAME"]], "relation": "*", "tableName": item["TABLE_NAME"] })
+    endpoints.push({ "fieldNames": [item["REFERENCED_COLUMN_NAME"]], "relation": "1", "tableName": item["REFERENCED_TABLE_NAME"] })
+    row["endpoints"] = endpoints
+    return row
+  })
+
+
+  let tables = tablesList.map((item, index, array) => {
+    // return array[index]; //用这种方法也可以获取到当前处理的元素
+    let row = { "name": item["TABLE_NAME"] , "id": item["TABLE_NAME"]}
+    row["engine"] = item["ENGINE"]
+    row["create_time"] = item["CREATE_TIME"]
+    row["note"] = item["TABLE_COMMENT"]
+    let columnsCurrentTable = COLUMNS.filter((column_item, index2, array2) => {
+      return column_item["TABLE_NAME"] == item["TABLE_NAME"]
+
+
+    });
+   // console.log("哈哈", columnsCurrentTable)
+    let columns = columnsCurrentTable.map((column_item, index2, array2) => {
+
+      let columnrow = { "name": column_item["COLUMN_NAME"] }
+      columnrow["dbdefault"] = column_item["COLUMN_DEFAULT"]
+      if (column_item["EXTRA"] == "auto_increment")
+        columnrow["increment"] = true
+
+        if (column_item["COLUMN_KEY"] == "UNI")
+        columnrow["unique"] = true
+
+      let COLUMN_TYPE = column_item["COLUMN_TYPE"]
+      if (COLUMN_TYPE != null) {
+        let type_name = COLUMN_TYPE
+if(type_name.indexOf("unsigned") > 0)
+{
+columnrow["unsigned"] = true
+}
+
+
+        if (type_name.indexOf(" ") > 0)
+          type_name = COLUMN_TYPE.substring(0, COLUMN_TYPE.indexOf(" "))
+        columnrow["type"] = { "type_name": type_name, "args": null }
+      }
+      columnrow["note"] = column_item["COLUMN_COMMENT"]
+      if (column_item["COLUMN_KEY"] == "PRI")
+        columnrow["pk"] = true
+
+      if (column_item["IS_NULLABLE"] != "YES")
+        columnrow["not_null"] = true
+      else
+        columnrow["not_null"] = false
+      return columnrow
+
+    });
+    row["fields"] = columns
+    return row;
+  });
+
+  let data = { "tables": tables, "name": "public", "note": "", "refs": refs, "tableGroups": [] }
+
+
+
+  return { success: true, msg: '加载数据成功', code: 0, "data":data};
+  */
+}
+//获取某个角色的数据权限
+@All('/GetRoleManageTableFields')
+async GetRoleManageTableFields(@Body() params: {}, @Query() query: {})
+{
+let param:any = Object.assign(params, query)
+
+let role_id=param?.id
+
+//let role=await this.dbopService.name("role").where("id>=?",[role_id]).select()
+
+let rs:any=[]
+if(role_id>1)
+ rs=await this.dbopService.name("role_menu").where("role_id=?",[role_id]).select()
+else
+rs=await this.dbopService.name("role_menu").where("role_id>=?",[0]).select()
+
+ let menu_ids=[]
+if(rs !=null && common.isArray(rs))
+{
+for(let i in rs)
+{
+  menu_ids.push(rs[i].menu_id)
+}
+}
+let data={"role_menu":menu_ids}
+return { success: true, msg: '加载数据成功', code: 0,data:data };
+}
+
 
 }

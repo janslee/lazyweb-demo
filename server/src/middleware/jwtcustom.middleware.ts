@@ -126,6 +126,10 @@ let scheme=null
     if(ignore==false && ctx.path.indexOf('/api/ManageMenuList') !== -1)
     ignore=true
     
+    if(ignore==false && ctx.path.indexOf('/api/DBList') !== -1)
+    ignore=true
+
+    
     return !ignore;
   }
 }

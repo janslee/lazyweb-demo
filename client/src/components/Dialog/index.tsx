@@ -66,7 +66,7 @@ export const Dialog = (props: any) => {
               
       
                 props?.$form.setValues({...oldvalues,...row})
-          
+                props?.$form.validate("*")
               }
 
             });
@@ -89,6 +89,7 @@ export const Dialog = (props: any) => {
         {
           let oldvalues=props?.$form.values
           props?.$form.setValues({...oldvalues,...data})
+          props?.$form.validate("*")
         }
           
         }
@@ -140,7 +141,7 @@ if (props?.dialogSaveApi != null && props?.dialogSaveApi != "") {
      {
    
       ExeConfirm(row)
-      //message.success(results.msg)
+     message.success(results.msg)
      }
     });
 
