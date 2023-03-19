@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react"
 import { common } from "../../lib/common"
 import { Card as AntdCard, Modal, Button, message } from 'antd'
-export const Dialog = (props: any) => {
+import { connect, mapProps } from "@formily/react"
+import { request } from "umi"
+export const Dialog2 = (props: any) => {
   const [modalVisible, setModalVisible] = useState(false)
   const openModal = () => setModalVisible(true)
   const closeModal = () => setModalVisible(false)
@@ -36,18 +38,23 @@ export const Dialog = (props: any) => {
         }
         else if (props?.dialogInitApi != null && props?.dialogInitApi != "" && msg!=null) {
           let dialogInitApi = props?.dialogInitApi
-          fetch(dialogInitApi, {
+    
 
-            method: 'post',
-            body: common.jsonToUrlParam(row),
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded'
-            }
+          request<{
+            msg: string;
+            code: number;
+            success: boolean;
+            data: any;
+          }>(dialogInitApi, {
+            method: 'POST',
+        data:row
           })
-            .then((res) => res.json())
-            .then(({ data,code }) => {
+
+           
+          .then((rs:any) => {
              // console.log("自定义弹窗弹窗初始化结果", data);
-            
+            let code=rs?.code
+            let data=rs?.data
               if (data != null && code==0)
               {
                 initialValues =data
@@ -64,7 +71,7 @@ export const Dialog = (props: any) => {
               
                 let oldvalues=props?.$form?.values
               
-      
+    
                 props?.$form.setValues({...oldvalues,...row})
                 props?.$form.validate("*")
               }
@@ -84,7 +91,7 @@ export const Dialog = (props: any) => {
             data[dialogPrefix+i]=row[i]
           }
           
-          console.log("测试",props?.$form)
+         // console.log("测试",props?.$form)
         if(props?.$form!=null)
         {
           let oldvalues=props?.$form.values
@@ -101,6 +108,7 @@ export const Dialog = (props: any) => {
 
 function confirm()
 {
+  props?.$form.validate("*")
   let valid=props?.$form.valid
   if(!valid)
   {
@@ -184,19 +192,19 @@ function ExeConfirm(row:any)
  //dialog.close()
 }
 }
-const preview=true
+
   return (
     <>
     
     <Modal
         title={props?.title}
         width={props?.width}
-      
+      mask={true}
         centered
         bodyStyle={{ padding: 10 }}
        // transitionName=""
       //  maskTransitionName=""
-        open={modalVisible}
+      open={modalVisible}
         onCancel={closeModal}
         destroyOnClose={true}
         onOk={() => {
@@ -207,29 +215,31 @@ const preview=true
         {props.children}
       </Modal>
 
-      {
-         preview!=null && preview==true?
-         null:
-    <AntdCard
-    
-      title={
-       
-        <span data-content-editable="x-component-props.title">
-          {props.title}
-        </span>
-      }
-      {...props}
-    >
-    
-   
-        {props.children}
-      <Button style={{display:"none"}} type='primary' onClick={openModal}>
-        打开弹窗
-      </Button>
-     
-    </AntdCard>
-}
+      
     </>
   )
 }
+
+
+
+export const Dialog = connect(
+  Dialog2,
+    mapProps((props: any, field:any) => {
+      
+      //window.console.log('CustomIput-props', props);
+    //  window.console.log('CustomIput-field', field);
+     // const { withCount } = props;
+  // console.log("field",field)
+    // console.log("select field",field)
+      return {
+        ...props,
+        value: field?.value,
+        $self: field,
+        $form: field?.form,
+      //  loading: loading,
+      //  showCount: withCount, // schema中有一个自定义的属性withCount，input本身没有该属性，需要通过mapProps做映射处理
+      };
+    })
+  );
+
 export default Dialog;

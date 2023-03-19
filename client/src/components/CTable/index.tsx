@@ -214,10 +214,10 @@ request.post(url,{
 data:data
   })
  
-      .then((rs) => {
+      .then((rs:any) => {
      //   console.log("数据",data)
    // message.success(rs?.msg)
-    if(common.isArray(rs.data))
+    if(common.isArray(rs?.data))
      setData(rs.data);
        setLoading(false);
 
@@ -225,7 +225,7 @@ data:data
           ...tableParams,
           pagination: {
             ...tableParams.pagination,
-            total: parseInt(rs.total),
+            total: parseInt(rs?.total),
             // 200 is mock data, you should read it from server
             // total: data.totalCount,
           },
@@ -320,7 +320,7 @@ pagination,
     
       onChange={(value: string[]) => {
        // console.log(`selected ${value}`);
-    searchParam[column?.dataIndex]=value
+    searchParam["select:"+column?.dataIndex]=value
       }
     }
    allowClear={true}

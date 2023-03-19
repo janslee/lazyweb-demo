@@ -2,7 +2,7 @@
 //自定义jwt鉴权
 import { Inject, Middleware } from '@midwayjs/decorator';
 import { Context, NextFunction } from '@midwayjs/koa';
-import { httpError } from '@midwayjs/core';
+//import { httpError } from '@midwayjs/core';
 import { JwtService } from '@midwayjs/jwt';
 
 @Middleware()
@@ -18,7 +18,11 @@ export class JwtcustomMiddleware {
     return async (ctx: Context, next: NextFunction) => {
       // 判断下有没有校验信息
       if (!ctx.headers['authorization']  &&   !ctx.cookies.get('token', { })  ) {
-        throw new httpError.UnauthorizedError();
+      //  throw new httpError.UnauthorizedError();
+        ctx.status = 401;
+       // ctx.body = 'Protected resource, use Authorization header to get access\n';
+       ctx.body = {success:false,msg:"未登录",token:"0","code":200};
+return
       }
 let token=""
 let scheme=null
@@ -28,7 +32,11 @@ let scheme=null
       const parts = ctx.get('authorization').trim().split(' ');
 
       if (parts.length !== 2) {
-        throw new httpError.UnauthorizedError();
+      //  throw new httpError.UnauthorizedError();
+      ctx.status = 401;
+      // ctx.body = 'Protected resource, use Authorization header to get access\n';
+      ctx.body = {success:false,msg:"未登录",token:"0","code":200};
+return
       }
 
       scheme=parts[0]
@@ -91,45 +99,29 @@ let scheme=null
         await next();
       }
       else{
-        throw new httpError.UnauthorizedError();
+             //  throw new httpError.UnauthorizedError();
+             ctx.status = 401;
+             // ctx.body = 'Protected resource, use Authorization header to get access\n';
+             ctx.body = {success:false,msg:"未登录",token:"0","code":200};
+      return
       }
     };
   }
 
   // 配置忽略鉴权的路由地址
   public match(ctx: Context): boolean {
+    
     let ignore = ctx.path.indexOf('/api/admin/login') !== -1;
+
+    //console.log("当前路径",ctx.header?.origin)
+    if(ctx.header?.origin!=null && ctx.header.origin.indexOf("127.0.0.1")>=0)
+     ignore=true
     if(ignore==false && ctx.path.indexOf('/api/user/login') !== -1)
     ignore=true
     if(ignore==false && ctx.path.indexOf('/api/login/account') !== -1)
     ignore=true
-    if(ignore==false && ctx.path.indexOf('/api/currentUser') !== -1)
-    ignore=true
-    if(ignore==false && ctx.path.indexOf('/unixtime') !== -1)
-    ignore=true
-    if(ignore==false && ctx.path.indexOf('/pwdMD5') !== -1)
-    ignore=true
-    if(ignore==false && ctx.path.indexOf('/SaveEdit') !== -1)
-    ignore=true
-    if(ignore==false && ctx.path.indexOf('/Find') !== -1)
-    ignore=true
-    if(ignore==false && ctx.path.indexOf('/Select') !== -1)
-    ignore=true
-    if(ignore==false && ctx.path.indexOf('/PageData') !== -1)
-    ignore=true
-    if(ignore==false && ctx.path.indexOf('/api/Delete') !== -1)
-    ignore=true
-    if(ignore==false && ctx.path.indexOf('/api/Upload') !== -1)
-    ignore=true
-    if(ignore==false && ctx.path.indexOf('/api/Find') !== -1)
-    ignore=true
-    if(ignore==false && ctx.path.indexOf('/api/ManageMenuList') !== -1)
-    ignore=true
-    
-    if(ignore==false && ctx.path.indexOf('/api/DBList') !== -1)
-    ignore=true
 
-    
+ 
     return !ignore;
   }
 }

@@ -142,11 +142,12 @@ React:React
 
 {
   effects() {
+
     onFieldInit('*', (field2:any,form2) => {
    
       field2.componentProps.$name=field2?.path?.entire
-    // field2.componentProps.$self=field2
-      field2.componentProps.$form=form2
+    // field2.componentProps.$self=field2  //不能注入自身，否则会导致死循环
+     // field2.componentProps.$form=form2
       field2.componentProps.$AddListen=AddListen
       field2.componentProps.$SendEmit=SendEmit
       

@@ -351,6 +351,12 @@
         path: '/custom/select',
         component: './custom/select',
       },
+      {
+        name: 'editor',
+        icon: 'SmileOutlined',
+        path: '/custom/editor',
+        component: './custom/editor',
+      },
     ]
 
   },

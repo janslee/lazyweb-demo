@@ -17,6 +17,8 @@ export type GlobalHeaderRightProps = {
  */
 const loginOut = async () => {
   await outLogin();
+  localStorage.setItem("token","")
+
   const { query = {}, search, pathname } = history.location;
   const { redirect } = query;
   // Note: There may be security issues, please note

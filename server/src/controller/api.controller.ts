@@ -111,9 +111,44 @@ let rs=null
     if(param?.table!=null)
     table=param?.table
 
-
+///api/Select?table_name=department&pageSize=100&param_pid_eq=0
     let where = "id >? "
     let p=["0"]
+    for(let i in param)
+    {
+      if(param[i]!=null && param[i]!="" && i.indexOf("param_")>=0 )
+      {
+        let ps=i.split("_")
+        if(ps.length!=3)
+        continue
+        let act="="
+        switch (ps[2]) {
+          case "gt":
+            act = ">";
+            break; /* 可选的 */
+          case "gte":
+            act = ">=";
+            break;
+          case "lt":
+            act = "<";
+            break;
+          case "lte":
+            act = "<=";
+            break;
+          case "eq":
+            act = "=";
+            break;
+          case "neq":
+            act = "<>";
+            break;
+          default: /* 可选的 */
+            act = "="
+        }
+        where+=` and ${ps[1]} ${act}? `
+        p.push(param[i])
+      }
+    }
+   
 
     //console.log("filters",param?.filters)
   if(param?.filters!=null)
@@ -130,11 +165,14 @@ let rs=null
 
   if(param?.search!=null)
   {
-    const search=param?.search
+    let search=param?.search
+
+    
     for(let i in search)
     {
       if(search[i]=="")
       continue
+     
       if(i.indexOf("min:")>=0)
       {
       where+=` and ${i.replace("min:","")} >=? `
@@ -151,6 +189,11 @@ let rs=null
       p.push(search[i][0])
       p.push((parseInt(search[i][1])+86400)+"")
     }
+    else if(i.indexOf("select:")>=0)
+    {
+      where+=` and ${i.replace("select:","")} =? `
+      p.push(search[i])
+    }
     else{
       where+=` and ${i} like ? `
       p.push("%"+search[i]+"%")
@@ -158,6 +201,7 @@ let rs=null
 
 
     }
+    console.log("搜索条件是:",where)
   }
 
     let pageSize=12
@@ -224,6 +268,21 @@ async ManageMenuList(@Body() params: {}, @Query() query: {})
 }
 
 
+@All('/ManageDepList')
+async ManageDepList(@Body() params: {}, @Query() query: {})
+{
+  let MenuDb:any=await this.dbopService.name("department").pagesize(1000).page(1).order("sort asc").select()
+  MenuDb=MenuDb.map((item:any)=>{
+    item["label"]=item["department_name"]
+    item["value"]=item["id"]
+    return item
+  })
+  let WebMenu=[]
+  common.GenTreePid0(WebMenu,MenuDb,"children")
+                                 
+  return { success: true, msg: '加载数据成功', code: 0, "data":WebMenu};
+}
+
 
 //获取某个角色订单权限
 @All('/GetManageMenu')
@@ -251,6 +310,36 @@ for(let i in rs)
 }
 }
 let data={"role_menu":menu_ids}
+return { success: true, msg: '加载数据成功', code: 0,data:data };
+}
+
+
+//获取某个角色的所有部门
+@All('/GetRoleDepartment')
+async GetRoleDepartment(@Body() params: {}, @Query() query: {})
+{
+  let param:any = Object.assign(params, query)
+let role_id=param?.id
+
+let data:any={}
+if(role_id!=null && role_id>0)
+data=await this.dbopService.name("role").where("id>=?",[role_id]).find()
+let rs:any=[]
+if(role_id>1)
+ rs=await this.dbopService.name("role_department").where("role_id=?",[role_id]).select()
+else
+rs=await this.dbopService.name("role_department").where("role_id>=?",[0]).select()
+
+ let department_ids=[]
+if(rs !=null && common.isArray(rs))
+{
+for(let i in rs)
+{
+  department_ids.push(rs[i].department_id)
+}
+}
+
+data["role_department"]=department_ids
 return { success: true, msg: '加载数据成功', code: 0,data:data };
 }
 
@@ -313,7 +402,43 @@ if(table!=null && table!="")
     
      return { success: true, msg: '保存数据成功', code: 0, "data": {} };
   }
-
+  @All('/SaveRoleDepartMent')
+  async SaveRoleDepartMent(@Body() params: {}, @Query() query: {}) {
+    let param = Object.assign(params, query)
+    let role_menu=param["role_department"]
+  
+    let role_id=param["id"]
+    const name=param["name"]
+    if(name==null || name=="")
+    {
+      return { success: true, msg: '角色名称不能为空', code: 1, "data": {} };
+    }
+    if(role_id==null || role_id=="")
+    {
+      role_id=await this.dbopService.name("role").insert({name:name,"add_time":common.unixtime10()})
+    }
+    else
+    {
+      await this.dbopService.name("role").where("id=?", [role_id]).update({name:name,upd_time:common.unixtime10()})
+    }
+    
+    
+    if(role_menu==null || role_menu=="")
+    {
+      return { success: true, msg: '保存成功', code: 0, "data": {} };
+    }
+    let role_menu_arr=role_menu.split(",")
+    role_menu_arr=common.uniqueArray(role_menu_arr)
+    //console.log("角色id",role_id,role_menu_arr)
+    await this.dbopService.name("role_department").where("role_id=?", [role_id]).delete()
+    for(let i in role_menu_arr)
+    {
+      let department_id=role_menu_arr[i]
+      await this.dbopService.name("role_department").insert({role_id:role_id,department_id:department_id,add_time:common.unixtime10()})
+    }
+     return { success: true, msg: '保存数据成功', code: 0, "data": {} };
+  }
+  
 
   @All('/Delete')
   async Delete(@Body() params: {}, @Query() query: {}) {
@@ -1323,6 +1448,12 @@ let menu=[
           icon: 'SmileOutlined',
           path: '/custom/select',
           component: './custom/select',
+        },
+        {
+          name: 'editor',
+          icon: 'SmileOutlined',
+          path: '/custom/editor',
+          component: './custom/editor',
         },
       ]
   

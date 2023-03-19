@@ -84,6 +84,13 @@ static FormatDate =( date:Date=new Date())=>{
       return num
   }
 
+//去重复的函数
+static uniqueArray<T>(arr: T[]): T[] {
+  return arr.filter((item, index, array) => {
+    return array.indexOf(item) === index;
+  });
+}
+
 //多级分类 根据list生成多级分类 children  
  
  static GenTree=(rs:Array<any>,data:Array<any>,ChildName:string="routes")=>
@@ -124,6 +131,47 @@ static FormatDate =( date:Date=new Date())=>{
     }
 
     }
+
+
+    static GenTreePid0=(rs:Array<any>,data:Array<any>,ChildName:string="routes")=>
+{
+    if(data==null)
+      return
+    
+    if(rs==null || rs.length==0  ){
+        for (let x in   data)
+        {
+            if(data[x]["pid"]==0)
+            {
+                rs.push(data[x])
+            }
+           
+        }
+    }
+      
+          
+    for(let i in rs)
+    {
+     let x=rs[i]
+    let  children=[]
+    let  id=x["id"]
+      for(let y in data)
+      {
+        if(data[y]["pid"]==id)
+          children.push(data[y])
+        }    
+      if (children.length>0)
+   {
+         common.GenTree(children,data,ChildName)
+        x[ChildName]=children
+        rs[i]=x
+    }
+      else
+        rs[i]=x
+    }
+
+    }
+
 
     static  get_file_suffix =(filename:string) =>{
      let pos = filename.lastIndexOf('.')

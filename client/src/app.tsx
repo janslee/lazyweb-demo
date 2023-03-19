@@ -28,7 +28,7 @@ const authHeaderInterceptor = (url: string, options: RequestOptionsInit) => {
 
   console.log("请求",url,options)
    if(admin!=null && admin?.token!=null)
-   authHeader = { Authorization: 'Bearer '+admin?.token };
+   authHeader = { Authorization: 'Bearer '+localStorage.getItem("token")};
    if(options?.headers!=null)
    authHeader=Object.assign(options?.headers,authHeader) 
 
@@ -41,6 +41,7 @@ const authHeaderInterceptor = (url: string, options: RequestOptionsInit) => {
 //写入token
 const demoResponseInterceptors = (response: Response, options: RequestOptionsInit) => {
  //response.headers.append('interceptors', 'yes yo');
+ //alert(response.status)
  if(response.status==401)
  {
   history.push("/user/login");
