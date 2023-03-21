@@ -196,7 +196,7 @@ let rs=null
     }
     else{
       where+=` and ${i} like ? `
-      p.push("%"+search[i]+"%")
+      p.push("%%"+search[i]+"%%")
     }
 
 

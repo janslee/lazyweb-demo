@@ -193,7 +193,7 @@ const fetchData = () => {
  
   setLoading(true);
   let data=getRandomuserParams(tableParams)
-  //console.log("请求参数data",tableParams)
+//console.log("请求参数data",tableParams)
 data["search"]=searchParam
 /*
 request.post(url,{
@@ -217,6 +217,7 @@ data:data
       .then((rs:any) => {
      //   console.log("数据",data)
    // message.success(rs?.msg)
+
     if(common.isArray(rs?.data))
      setData(rs.data);
        setLoading(false);
@@ -240,6 +241,16 @@ data:data
   
   }, [JSON.stringify(tableParams)]);
 */
+function Refresh  (msg:any){
+  if(msg.act=="refresh")
+  {
+  
+   fetchData()
+
+  }
+ 
+
+}
   useEffect(() => {
     //刷新
 let EventID=props?.$name
@@ -247,30 +258,27 @@ if(EventID==null || EventID=="")
 {
   EventID="CTable"
 }
-  props?.$AddListen(EventID,(msg:any)=>{
-    if(msg.act=="refresh")
-    {
-      fetchData()
- 
-    }
-   
-
-  })
 
 
+  props?.$AddListen(EventID,Refresh)
+
+  return () => {
+    props?.$RemoveListen(EventID,Refresh)
+  }
   
-  fetchData();
+ //fetchData();
 
-},[])
+},[tableParams])
 
 
 
   const handleTableChange = (
+
     pagination: TablePaginationConfig,
     filters: Record<string, FilterValue>,
     sorter: SorterResult<any>,
   ) => {
-    
+
     setTableParams({
 pagination,
       filters,
@@ -347,9 +355,10 @@ fetchData()
 const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 const start = () => {
 fetchData()
+//props.$SendEmit(props.$name,{"act":"refresh"})
 };
 const deleteRows = () => {
-  console.log("组件参数",props)
+ // console.log("组件参数",props)
   if(props?.delApi!=null && props?.delApi!="")
   {
    

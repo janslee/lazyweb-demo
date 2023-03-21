@@ -47,6 +47,7 @@ import  Dialog from '../../../components/Dialog'
 import  IconSelect from '../../../components/IconSelect'
 import  Select  from   '../../../components/CSelect'
 import  Switch  from   '../../../components/CSwitch'
+import  Editor  from   '../../../components/Editor'
 import { Card, Slider, Rate,Modal  } from 'antd'
 
 
@@ -57,7 +58,9 @@ let AddListen=(hadlename:string,fun:any)=>{
   eventBus.addListener(hadlename,fun)
 }
 
-
+let RemoveListen=(hadlename:string,fun:any)=>{
+  eventBus.removeListener(hadlename,fun)
+}
 
 
 let SendEmit=(hadlename:string,msg:any)=>{
@@ -122,12 +125,14 @@ const SchemaField = createSchemaField({
     FormDialog,
     Modal,
     Dialog,
-    IconSelect
+    IconSelect,
+    Editor
   },
 
 scope: {
 $AddListen:AddListen,
 $SendEmit:SendEmit,
+$RemoveListen:RemoveListen,
 React:React
 }
 })
@@ -150,6 +155,8 @@ React:React
      // field2.componentProps.$form=form2
       field2.componentProps.$AddListen=AddListen
       field2.componentProps.$SendEmit=SendEmit
+      field2.componentProps.$RemoveListen=RemoveListen
+      
       
     })
   },
