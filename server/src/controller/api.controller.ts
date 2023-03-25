@@ -10,6 +10,7 @@ import { JwtPassportMiddleware } from '../middleware/jwt.middleware';
 import { common } from '../lib/common';
 import { Files, Fields } from '@midwayjs/decorator';
 import { OSSService } from '@midwayjs/oss';
+
 @Controller('/api')
 export class APIController {
 
@@ -266,7 +267,27 @@ async ManageMenuList(@Body() params: {}, @Query() query: {})
                                  
   return { success: true, msg: '加载数据成功', code: 0, "data":WebMenu};
 }
+@All('/ManageTableList')
+async ManageTableList(@Body() params: {}, @Query() query: {})
+{
+ const config= this.app.getConfig()
+ let DataBaseConfig= config.mysql
+  let sql = `SELECT * FROM information_schema.tables where TABLE_TYPE="BASE TABLE" and table_schema =? limit 300`
+  let tablesList = await this.dbopService.db(params["db"]).query(sql, [DataBaseConfig.database])
+ 
+   sql = `SELECT * FROM information_schema.views where table_schema =? limit 300`
+  let viewList = await this.dbopService.db(params["db"]).query(sql, [DataBaseConfig.database])
+  tablesList=tablesList.concat(viewList)
 
+  let  data=tablesList.map((item:any)=>{
+    item["label"]="default|"+item["TABLE_NAME"]
+    item["value"]="default|"+item["TABLE_NAME"]
+    return item
+  })      
+
+
+  return { success: true, msg: '加载数据成功', code: 0, "data":data};
+}
 
 @All('/ManageDepList')
 async ManageDepList(@Body() params: {}, @Query() query: {})
@@ -284,7 +305,7 @@ async ManageDepList(@Body() params: {}, @Query() query: {})
 }
 
 
-//获取某个角色订单权限
+//获取某个订单权限
 @All('/GetManageMenu')
 async GetManageMenu(@Body() params: {}, @Query() query: {})
 {
@@ -313,6 +334,66 @@ let data={"role_menu":menu_ids}
 return { success: true, msg: '加载数据成功', code: 0,data:data };
 }
 
+
+
+//获取某个部门的权限
+@All('/GetDepMenu')
+async GetDepMenu(@Body() params: {}, @Query() query: {})
+{
+  let param:any = Object.assign(params, query)
+
+let department_id=param?.id
+
+//let role=await this.dbopService.name("role").where("id>=?",[role_id]).select()
+
+let rs:any=[]
+if(department_id>0)
+ rs=await this.dbopService.name("department_menu").where("department_id=?",[department_id]).limit(1000).select()
+else
+rs=await this.dbopService.name("department_menu").where("department_id>=?",[0]).limit(1000).select()
+//console.log("对应",rs)
+ let menu_ids=[]
+if(rs !=null && common.isArray(rs))
+{
+for(let i in rs)
+{
+  if(rs[i].menu_id!=null)
+  menu_ids.push(rs[i].menu_id)
+}
+}
+let data={"dep_menus":menu_ids}
+return { success: true, msg: '加载数据成功', code: 0,data:data };
+}
+
+//获取某个部门的表格权限
+@All('/GetDepTablePower')
+async GetDepTablePower(@Body() params: {}, @Query() query: {})
+{
+  let param:any = Object.assign(params, query)
+
+let department_id=param?.id
+
+//let role=await this.dbopService.name("role").where("id>=?",[role_id]).select()
+
+let rs:any=[]
+if(department_id>0)
+ rs=await this.dbopService.name("department_table").where("department_id=?",[department_id]).limit(1000).select()
+else
+rs=await this.dbopService.name("department_table").where("department_id>=?",[0]).limit(1000).select()
+//console.log("对应",rs)
+ let menu_ids=[]
+if(rs !=null && common.isArray(rs))
+{
+for(let i in rs)
+{
+  if(rs[i].table_name!=null)
+  menu_ids.push(rs[i].table_name)
+}
+}
+
+let data={"dep_tables":menu_ids}
+return { success: true, msg: '加载数据成功', code: 0,data:data };
+}
 
 //获取某个角色的所有部门
 @All('/GetRoleDepartment')
@@ -402,6 +483,52 @@ if(table!=null && table!="")
     
      return { success: true, msg: '保存数据成功', code: 0, "data": {} };
   }
+
+  @All('/SaveDepMenu')
+  async SaveDepMenu(@Body() params: {}, @Query() query: {}) {
+    let param = Object.assign(params, query)
+    let dep_menus=param["dep_menus"]
+    let department_id=param["id"]
+    if(dep_menus==null || dep_menus=="")
+    {
+      return { success: true, msg: '没有需要保存的数据', code: 1, "data": {} };
+    }
+    let role_menu_arr=dep_menus.split(",")
+    //console.log("保存部门id",department_id,role_menu_arr)
+    await this.dbopService.name("department_menu").where("department_id=?", [department_id]).delete()
+    for(let i in role_menu_arr)
+    {
+      let menu_id=role_menu_arr[i]
+      await this.dbopService.name("department_menu").insert({department_id:department_id,menu_id:menu_id,add_time:common.unixtime10()})
+    }
+    
+     return { success: true, msg: '保存数据成功', code: 0, "data": {} };
+  }
+
+
+  
+
+  @All('/SaveDepTablePower')
+  async SaveDepTablePower(@Body() params: {}, @Query() query: {}) {
+    let param = Object.assign(params, query)
+    let dep_tables=param["dep_tables"]
+    let department_id=param["id"]
+    await this.dbopService.name("department_table").where("department_id=?", [department_id]).delete()
+    if(dep_tables==null || dep_tables=="")
+    {
+     return { success: true, msg: '已清空', code: 0, "data": {} };
+    }
+    let role_menu_arr=dep_tables.split(",")
+    //console.log("保存部门id",department_id,role_menu_arr)
+    
+    for(let i in role_menu_arr)
+    {
+      let table_name=role_menu_arr[i]
+      await this.dbopService.name("department_table").insert({department_id:department_id,table_name:table_name,add_time:common.unixtime10()})
+    }
+    
+     return { success: true, msg: '保存数据成功', code: 0, "data": {} };
+  }
   @All('/SaveRoleDepartMent')
   async SaveRoleDepartMent(@Body() params: {}, @Query() query: {}) {
     let param = Object.assign(params, query)
@@ -458,9 +585,26 @@ if(table!=null && table!="")
     console.log("dBService是", this.dBService)
     let rs = await this.dBService.query("select * from l_admin")
     return { "rs": rs }
-
   }
 
+
+  @All('/sql3')
+  async sql3(@Body() params: {}, @Query() query: {}) {
+  //  console.log("dBService是", this.dBService)
+    let rs = await this.dbopService.db("platform").name("article").select()
+    return { "rs": rs }
+  }
+
+  @All('/TestDb')
+  async TestDb(@Body() params: {}, @Query() query: {}) {
+    let param = Object.assign(params, query)
+   
+    const rs =await this.dBService.addPool(param)
+   
+return rs
+
+  }
+ 
 
   @All('/Upload')
   async Upload(@Files() files, @Fields() fields) {
@@ -1078,14 +1222,41 @@ if(password!=admin["password"])
 //更新登录时间
 where="username=?"
 let t:string=common.unixtime10()
-let num=await this.dbopService.name("admin").where(where, [params["username"]]).update({"login_time":t})
+await this.dbopService.name("admin").where(where, [params["username"]]).update({"login_time":t})
 
-console.log("更新登录的行数",typeof(num),num)
+//console.log("更新登录的行数",typeof(num),num)
 delete admin["password"]
 delete admin["login_salt"]
 admin["status"]="ok"
 admin["currentAuthority"]="admin"
+//获取对应的部门
+let role_department:any= await this.dbopService.name("role_department").where("role_id=?", [admin["role_id"]]).limit(1000).select()
 
+
+let departments:any = await this.dbopService.name("department").where("id>?", [0]).limit(1000).select()
+let department_id_array=[]
+if(role_department!=null)
+{
+  for(let i in role_department)
+  {
+ let departments2=common.findRecordsWithChildren(departments,role_department[i]["department_id"])
+ if(departments2!=null)
+
+ department_id_array = department_id_array.concat(departments2);
+  }
+
+}
+
+let role_departments=[]
+for(let i in department_id_array)
+{
+  if(department_id_array[i]["id"]!=null)
+  role_departments.push(department_id_array[i]["id"])
+}
+role_departments=common.uniqueArray(role_departments)
+admin["role_departments"] = role_departments
+
+//console.log("当前角色的部门",role_departments)
 const token:string=await this.jwt.sign(admin)
 admin["token"]=token
 this.ctx.cookies.set('token', token, { encrypt: false });
@@ -1473,17 +1644,21 @@ let admin=this.ctx.state.user;
 let role_id=admin.role_id
 let MenuDb:any=[]
 //console.log("当前的角色",role_id)
+let role_departments=admin["role_departments"]
+
 if(role_id>1)
 {
 
- let  menus:any=await this.dbopService.name("role_menu").fields("menu_id").where("role_id=?",[role_id]).pagesize(1000).select()
+ let  menus:any=await this.dbopService.name("department_menu").fields("menu_id").where("department_id in (?)",[role_departments]).pagesize(1000).select()
 if (menus==null || menus.length==0)
 {
   MenuDb=[]
 }
 else
 {
+  //console.log("获取到的菜单",menus)
   const menu_ids = menus.map(record => record.menu_id);
+
   MenuDb=await this.dbopService.name("menu").fields("name,url,menu_type,title,path,pid,id,component,icon").where("id in ? ",[menu_ids]).order("sort asc").pagesize(1000).select()
 
 }

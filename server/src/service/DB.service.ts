@@ -8,6 +8,7 @@ export class DBService {
     connection=null;
     prefix:string="l_";
     Table:string=""
+    table_name:string=""
     Where:string=""
     WhereParam:any[]=[]
     Page:number=1
@@ -16,7 +17,7 @@ export class DBService {
     Fields:string="*"
     Pools: Record<string, mysql.Pool> ={}
     pool:string="default"
-
+    Prefixs: Record<string, string> ={}
 // 建立链接
 @Config('mysql')
 config;
@@ -40,21 +41,32 @@ async init() {
     database: this.config.database
 });
 this.Pools["default"]=pool;
-
+this.Prefixs["default"]=this.config.prefix
 
 const DbList:any=await this.query(`select * from ${this.config.prefix}db where status=1`)
 
 if(DbList!=null)
  {
     DbList.forEach(element => {
+try{
       const pool2 = mysql.createPool({
         host: element["host"],
         user: element["username"],
         password: element["password"],
         database:element["dbname"]
     });
+    if(pool2!=null)
+    {
+      this.Pools[element["name"]]=pool2;
+      this.Prefixs[element["name"]]=element["prefix"]
+    }
   
-    this.Pools[element["name"]]=pool2;
+  }
+  catch(e)
+  {
+    console.log("连接数据库失败",element["dbname"],element["name"])
+  }
+
      });
  }
  
@@ -65,6 +77,62 @@ resolve("")
   });
 }
 
+  async addPool(element:any)
+{
+  let r={
+    "data":{},
+    success: true,
+   code:0,
+   msg:"连接数据库成功7"
+  }
+
+  let  pool2 =null
+  try{
+     pool2 = mysql.createPool({
+      host: element["host"],
+      user: element["username"],
+      password: element["password"],
+      database:element["dbname"]
+  });
+  if(pool2!=null)
+  {
+    this.Pools[element["name"]]=pool2;
+    this.Prefixs[element["name"]]=element["prefix"]
+  }
+
+}
+catch(e)
+{
+  r.msg="连接数据库失败5"+e.toString()
+  r.code=1
+  console.log("连接数据库失败5",element["dbname"],element["name"],e.toString())
+}
+
+try {
+  await new Promise<mysql.PoolConnection>((resolve, reject) => {
+    pool2.getConnection((err, conn) => {
+      if (err) {
+     
+        reject(err);
+      } else {
+        r.msg="连接数据库成功"
+        r.code=0
+        resolve(conn);
+      }
+    });
+  });
+
+  console.log('Connected to database!');
+ // return connection;
+} catch (error) {
+  console.error('Error connecting to database:', error);
+  r.msg="连接数据库失败"+error.toString()
+  r.code=1
+  //throw error;
+}
+
+return r
+}
 
 table(Table="")
 {
@@ -74,7 +142,8 @@ table(Table="")
 
 name(Table:string="")
 {
-  this.Table=this.prefix+Table
+  this.table_name=Table
+  
   return this
 }
 

@@ -9,6 +9,7 @@ export class DbopService {
 
     prefix:string="l_";
     Table:string=""
+    table_name:string=""
     Where:string=""
     WhereParam:any[]=[]
     Page:number=1
@@ -16,7 +17,7 @@ export class DbopService {
     Order:string=""
     Fields:string="*"
     pool:string="default"
-
+    Prefixs: Record<string, string> ={}
 
     @Config('mysql')
     config;
@@ -33,10 +34,11 @@ export class DbopService {
 
 @Init()
 async init() {
-
+this.Prefixs=this.dBService.Prefixs
 }
 db(poolName="")
 {
+  if(poolName!=null && poolName!="")
  this.pool=poolName
  return this
 }
@@ -49,7 +51,7 @@ table(Table="")
 
 name(Table:string="")
 {
-  this.Table=this.config.prefix+Table
+  this.Table=this.Prefixs[this.pool]+Table
   return this
 }
 

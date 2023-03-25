@@ -62,7 +62,7 @@ export const Dialog2 = (props: any) => {
                 let row={}
                 for(let i in initialValues)
                 {
-                  if(i!="password" && i!="pwd" && i.indexOf("salt")<0  && i.indexOf("pwd")<0)
+                  if( i!="pwd" && i.indexOf("salt")<0  && i.indexOf("pwd")<0)
                   row[dialogPrefix+i]=initialValues[i]
                   else
                   row[dialogPrefix+i]=""
@@ -116,6 +116,7 @@ function confirm()
     return 
   }
 const valuse=props?.$form.values
+//console.log("哈哈",valuse)
 let dialogPrefix=props?.dialogPrefix
 if(dialogPrefix==null)
 dialogPrefix="row|"
@@ -193,24 +194,126 @@ function ExeConfirm(row:any)
 }
 }
 
+
+function ExeCode(code:any)
+{
+
+  let valid=props?.$form.valid
+
+if(!valid)
+{
+  message.error("请检查输入的数据")
+  return false
+}
+const valuse=props?.$form.values
+console.log("valuse",valuse)
+let dialogPrefix=props?.dialogPrefix
+if(dialogPrefix==null)
+dialogPrefix="row|"
+let row={}
+for(let i in valuse)
+{
+  if(i.indexOf(dialogPrefix)>=0)
+  {
+    row[i.replace(dialogPrefix,"")]=valuse[i]
+  }
+}
+
+
+   if(typeof(code)=="string")
+   {
+   try {
+     let confirm2 = eval(code)
+  
+     confirm2(row)
+   }
+   catch (e) {
+     //...
+     console.log("转换code出错",e)
+   }
+   //dialog.close()
+ }
+ if(typeof(code)=="function")
+ {
+
+ try {
+
+   code(row)
+ }
+ catch (e) {
+   //...
+   console.log("执行code出错",e)
+ }
+ //dialog.close()
+}
+return
+}
+function cancel()
+{
+  if (props?.cancelFun != null && props?.cancelFun != ""  ) {
+    ExeCode(props?.cancelFun)
+    }
+  closeModal()
+}
+function thirdFun()
+{
+  if (props?.thirdFun != null && props?.thirdFun != ""  ) {
+    ExeCode(props?.thirdFun)
+    }
+
+}
+
+
+let cancelText="取消"
+if(props?.cancelText!=null && props?.cancelText!="")
+{
+  cancelText=props?.cancelText
+}
+
+let okText="确定"
+if(props?.okText!=null && props?.okText!="")
+{
+  okText=props?.okText
+}
+let thirdText="按钮"
+if(props?.thirdText!=null && props?.thirdText!="")
+{
+  thirdText=props?.thirdText
+}
+const ThirdBtnDisplay=props?.showThirdBtn!=null && props?.showThirdBtn==true?"inline-block":"none"
+
+
   return (
     <>
     
     <Modal
-        title={props?.title}
-        width={props?.width}
+      bodyStyle={{ padding: 10 }}
+      centered={true}
       mask={true}
-        centered
-        bodyStyle={{ padding: 10 }}
+      {...props}
+ 
+     
+      
        // transitionName=""
       //  maskTransitionName=""
       open={modalVisible}
-        onCancel={closeModal}
+
         destroyOnClose={true}
         onOk={() => {
           confirm()
          
         }}
+
+        onCancel={() => {
+         
+          cancel()
+         }}
+
+         footer={[
+          <Button  style={{display:ThirdBtnDisplay}} key='continue' onClick={thirdFun}>{thirdText}</Button>,
+             <Button key='cancel' onClick={cancel} >{cancelText}</Button>,
+             <Button key='confirm' type="primary" onClick={confirm}>{okText}</Button>
+           ]}
       >
         {props.children}
       </Modal>

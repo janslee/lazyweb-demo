@@ -91,6 +91,30 @@ static uniqueArray<T>(arr: T[]): T[] {
   });
 }
 
+//获取某个记录自己以及所有的子记录
+static findRecordsWithChildren(records: any, id: number) {
+  const result = [];
+
+  function findChildren(currentId: number) {
+    const children = records.filter((record) => record.pid === currentId);
+
+    for (const child of children) {
+      result.push(child);
+      findChildren(child.id);
+    }
+  }
+
+  const record = records.find((record) => record.id === id);
+
+  if (record) {
+    result.push(record);
+    findChildren(record.id);
+  }
+
+  return result;
+}
+
+
 //多级分类 根据list生成多级分类 children  
  
  static GenTree=(rs:Array<any>,data:Array<any>,ChildName:string="routes")=>
