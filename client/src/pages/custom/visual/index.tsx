@@ -48,7 +48,7 @@ import  IconSelect from '../../../components/IconSelect'
 import  Select  from   '../../../components/CSelect'
 import  Switch  from   '../../../components/CSwitch'
 import  Editor  from   '../../../components/Editor'
-import { Card, Slider, Rate,Modal  } from 'antd'
+import { Card, Slider, Rate,Modal,message  } from 'antd'
 
 
 import { eventBus } from '../../../lib/Provider'
@@ -133,6 +133,7 @@ scope: {
 $AddListen:AddListen,
 $SendEmit:SendEmit,
 $RemoveListen:RemoveListen,
+$message:message,
 React:React
 }
 })

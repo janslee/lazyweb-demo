@@ -77,7 +77,9 @@ export class APIController {
   async Find(@Body() params: {}, @Query() query: {}) {
     let param:any = Object.assign(params, query)
     let table="page"
-    
+    let dbname=param?.dbname
+if(dbname==null || dbname=="")
+dbname="default"
 
     let id=param?.id
     delete param["id"]
@@ -87,12 +89,12 @@ let rs=null
     if(param?.table_name!=null)
     {
     table=param?.table_name
-     rs = await this.dbopService.name(table).where(where, [id]).find()
+     rs = await this.dbopService.db(dbname).name(table).where(where, [id]).find()
   }
   if(param?.table!=null)
   {
     table=param?.table
-    rs = await this.dbopService.table(table).where(where, [id]).find()
+    rs = await this.dbopService.db(dbname).table(table).where(where, [id]).find()
   }
     if(rs!=null && table=="admin")
     {
@@ -111,7 +113,9 @@ let rs=null
     table=param?.table_name
     if(param?.table!=null)
     table=param?.table
-
+let dbname=param?.dbname
+if(dbname==null || dbname=="")
+dbname="default"
 ///api/Select?table_name=department&pageSize=100&param_pid_eq=0
     let where = "id >? "
     let p=["0"]
@@ -226,14 +230,14 @@ let rs=null
      let total=0
      if(param?.table_name!=null)
      {
-     rs = await this.dbopService.name(table).pagesize(pageSize).page(page).order(order).where(where, p).select()
-    total=await this.dbopService.name(table).where(where, p).count("*")
+     rs = await this.dbopService.db(dbname).name(table).pagesize(pageSize).page(page).order(order).where(where, p).select()
+    total=await this.dbopService.db(dbname).name(table).where(where, p).count("*")
   }
 
   if(param?.table!=null)
   {
-  rs = await this.dbopService.table(table).pagesize(pageSize).page(page).order(order).where(where, p).select()
- total=await this.dbopService.table(table).where(where, p).count("*")
+  rs = await this.dbopService.db(dbname).table(table).pagesize(pageSize).page(page).order(order).where(where, p).select()
+ total=await this.dbopService.db(dbname).table(table).where(where, p).count("*")
 }
 let data=[]
 if(rs!=null && table=="admin")
@@ -434,7 +438,10 @@ return { success: true, msg: '加载数据成功', code: 0, "data":admin};
 
   @All('/SaveEdit')
   async SaveEdit(@Body() params: {}, @Query() query: {}) {
-    let param = Object.assign(params, query)
+    let param:any= Object.assign(params, query)
+    let dbname=param?.dbname
+if(dbname==null || dbname=="")
+dbname="default"
     let where = "id =? "
     let id=param["id"]
 
@@ -448,16 +455,16 @@ let rs=null
 if(id!=null)
 {
 if(table!=null && table!="")
-     rs = await this.dbopService.table(table).where(where, [id]).update(params)
+     rs = await this.dbopService.db(dbname).table(table).where(where, [id]).update(params)
      if(table_name!=null && table_name!="")
-     rs = await this.dbopService.name(table_name).where(where, [id]).update(params) 
+     rs = await this.dbopService.db(dbname).name(table_name).where(where, [id]).update(params) 
     } 
    else
    {
     if(table!=null && table!="")
-     rs = await this.dbopService.table(table).insert(params)
+     rs = await this.dbopService.db(dbname).table(table).insert(params)
      if(table_name!=null && table_name!="")
-     rs = await this.dbopService.name(table_name).insert(params) 
+     rs = await this.dbopService.db(dbname).name(table_name).insert(params) 
    }
    
      return { success: true, msg: '保存数据成功', code: 0, "data": rs };
@@ -506,6 +513,18 @@ if(table!=null && table!="")
   }
 
 
+
+  @All('/SaveApiSql')
+  async SaveApiSql(@Body() params: {}, @Query() query: {}) {
+    let param = Object.assign(params, query)
+  
+    let id=param["id"]
+    
+      await this.dbopService.name("api").where("id=?",[id]).update({dbname:param["dbname"],sql_code:param["sql_code"],upd_time:common.unixtime10()})
+    
+    
+     return { success: true, msg: '保存数据成功', code: 0, "data": {} };
+  }
   
 
   @All('/SaveDepTablePower')
@@ -569,14 +588,17 @@ if(table!=null && table!="")
 
   @All('/Delete')
   async Delete(@Body() params: {}, @Query() query: {}) {
-    let param = Object.assign(params, query)
+    let param:any = Object.assign(params, query)
+    let dbname=param?.dbname
+if(dbname==null || dbname=="")
+dbname="default"
     let where = "id in (?) "
     let ids=param["ids"]
     let rs =null
     if(param["table"]!=null)
-     rs = await this.dbopService.table(param["table"]).where(where, [ids]).delete()
+     rs = await this.dbopService.db(dbname).table(param["table"]).where(where, [ids]).delete()
      if(param["table_name"]!=null)
-     rs = await this.dbopService.name(param["table_name"]).where(where, [ids]).delete()
+     rs = await this.dbopService.db(dbname).name(param["table_name"]).where(where, [ids]).delete()
     return { success: true, msg: 'OK', code: 0, "data": rs };
   }
 
@@ -592,7 +614,86 @@ if(table!=null && table!="")
   async sql3(@Body() params: {}, @Query() query: {}) {
   //  console.log("dBService是", this.dBService)
     let rs = await this.dbopService.db("platform").name("article").select()
-    return { "rs": rs }
+    let admin = await this.dbopService.name("admin").select()
+    return { "rs": rs ,"admn":admin}
+  }
+
+
+  @All('/TestSql')
+  async TestSql(@Body() params: {}, @Query() query: {}) {
+  //  console.log("dBService是", this.dBService)
+  let param:any= Object.assign(params, query)
+  let sql=param["sql_code"]
+  if(param?.params!=null && param?.params!="")
+  {
+    try{
+    let p=JSON.parse(param["params"])
+   // console.log("测试参数",p)
+    for(let i in p)
+    {
+      let v=p[i]
+      let reg = new RegExp("\{"+i+"\}", "g");
+      sql=sql.replace(reg,v)
+    }
+  }
+  catch(e)
+  {
+  console.log("转换参数错误")
+  }
+  }
+
+
+  let dbname=param?.dbname
+  if(dbname==null || dbname=="")
+  dbname="default"
+  let rs:any=[]
+
+let sql_array=sql.split(";")
+
+  for(let i in sql_array)
+  {
+    if(common.trim(sql_array[i])!="")
+    {
+    let rs2 = await this.dbopService.db(dbname).query(sql_array[i])
+    rs.push(rs2)
+  }
+  }
+
+    
+    return { "data": rs,code:0,msg:JSON.stringify(rs),success:true}
+  }
+
+
+  @All('/TestJs')
+  async TestJs(@Body() params: {}, @Query() query: {}) {
+  //  console.log("dBService是", this.dBService)
+  let param:any= Object.assign(params, query)
+  let js=param["js_code"]
+  if(param?.params!=null && param?.params!="")
+  {
+    try{
+    let p=JSON.parse(param["params"])
+   // console.log("测试参数",p)
+    for(let i in p)
+    {
+      let v=p[i]
+      let reg = new RegExp("\{"+i+"\}", "g");
+      js=js.replace(reg,v)
+    }
+  }
+  catch(e)
+  {
+  console.log("转换参数错误")
+  }
+  }
+  let dbname=param?.dbname
+  if(dbname==null || dbname=="")
+  dbname="default"
+  let rs:any=[]
+
+let fun=new Function(js)
+rs=fun()
+return { "data": rs,code:0,msg:JSON.stringify(rs),success:true}
   }
 
   @All('/TestDb')
@@ -2142,5 +2243,19 @@ let data={"role_menu":menu_ids}
 return { success: true, msg: '加载数据成功', code: 0,data:data };
 }
 
+@All('/DatabaseList')
+async DatabaseList(@Body() params: {}, @Query() query: {}) {
+let rs:any=await this.dbopService.name("db").where("status>?",[0]).select()
+
+rs.splice(0, 0, {name:"default",title:"默认数据库"});
+return { success: true, msg: '加载数据成功', code: 0,data:rs };
+}
+
+
+@All('/*')
+async common(@Body() params: {}, @Query() query: {}) {
+
+return { success: true, msg: '加载数据成功2', code: 0,path:this.ctx.path};
+}
 
 }

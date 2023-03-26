@@ -16,7 +16,15 @@ export class JwtcustomMiddleware {
 
   resolve() {
     return async (ctx: Context, next: NextFunction) => {
+      //console.log("当前的路径是",ctx.path)
       // 判断下有没有校验信息
+      if (  !ctx.cookies.get('token', { })  ) {
+        //  throw new httpError.UnauthorizedError();
+          ctx.status = 401;
+         // ctx.body = 'Protected resource, use Authorization header to get access\n';
+         ctx.body = {success:false,msg:"未登录",token:"0","code":200};
+  return
+        }
       if (!ctx.headers['authorization']  &&   !ctx.cookies.get('token', { })  ) {
       //  throw new httpError.UnauthorizedError();
         ctx.status = 401;

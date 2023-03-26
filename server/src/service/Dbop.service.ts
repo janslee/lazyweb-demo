@@ -40,6 +40,8 @@ db(poolName="")
 {
   if(poolName!=null && poolName!="")
  this.pool=poolName
+ else
+  this.pool="default"
  return this
 }
 
@@ -117,6 +119,7 @@ sql+=limit
  // 获取数据库链接对象
  //var connection =  this.connection;
  let rs=await this.dBService.query(sql,parmas,this.pool)
+ this.pool="default"
  return rs
 }
 
@@ -149,6 +152,7 @@ return null
  {
   rs=rs[0]
  }
+ this.pool="default"
  return rs
 }
     async insert(parmas:object)
@@ -173,12 +177,14 @@ for (let key in parmas)
   if(rs!=null && rs?.insertId!=null)
   id=rs?.insertId
 //console.log("rs",rs.affectedRows)
+this.pool="default"
 return id
 }
 //查询语句
 async query(sql, parmas = null):Promise<any> {
     // 获取数据库链接对象
     let rs=await this.dBService.query(sql,parmas,this.pool)
+    this.pool="default"
     return rs
 }
 
@@ -230,6 +236,7 @@ for (let key in parmas)
   if(rs!=null && rs?.affectedRows!=null)
   num=rs?.affectedRows
 //console.log("rs",rs.affectedRows)
+this.pool="default"
 return num
 // 关闭链接
 //  connection.end();
@@ -253,6 +260,7 @@ return num
  if(rs!=null && rs?.affectedRows!=null)
  num=rs?.affectedRows
 //console.log("rs",rs.affectedRows)
+this.pool="default"
 return num
 
 }
@@ -270,7 +278,7 @@ sql+=` where  ${this.Where} `
  //var connection =  this.connection;
  
  let rs=await this.dBService.query(sql,parmas,this.pool)
-
+ this.pool="default"
  if(rs!=null && rs[0]!=null && rs[0]["c"]!=null)
  return rs[0]["c"]
  else
@@ -289,6 +297,7 @@ sql+=` where  ${this.Where} `
  // 获取数据库链接对象
 
 let rs=await this.dBService.query(sql,parmas,this.pool)
+this.pool="default"
 return rs[0]["c"]
      // 关闭链接
    //  connection.end();
