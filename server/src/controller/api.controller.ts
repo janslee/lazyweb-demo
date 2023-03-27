@@ -526,6 +526,18 @@ if(table!=null && table!="")
      return { success: true, msg: '保存数据成功', code: 0, "data": {} };
   }
   
+  @All('/SaveApiJs')
+  async SaveApiJs(@Body() params: {}, @Query() query: {}) {
+    let param = Object.assign(params, query)
+  
+    let id=param["id"]
+    
+      await this.dbopService.name("api").where("id=?",[id]).update({js_code:param["js_code"],upd_time:common.unixtime10()})
+    
+    
+     return { success: true, msg: '保存数据成功', code: 0, "data": {} };
+  }
+
 
   @All('/SaveDepTablePower')
   async SaveDepTablePower(@Body() params: {}, @Query() query: {}) {
@@ -624,10 +636,11 @@ dbname="default"
   //  console.log("dBService是", this.dBService)
   let param:any= Object.assign(params, query)
   let sql=param["sql_code"]
+  let p={}
   if(param?.params!=null && param?.params!="")
   {
     try{
-    let p=JSON.parse(param["params"])
+     p=JSON.parse(param["params"])
    // console.log("测试参数",p)
     for(let i in p)
     {
@@ -647,7 +660,8 @@ dbname="default"
   if(dbname==null || dbname=="")
   dbname="default"
   let rs:any=[]
-
+  sql=sql.replace(/[\r\n]/g,"")
+  sql=sql.replace(/[\n]/g,"")
 let sql_array=sql.split(";")
 
   for(let i in sql_array)
@@ -655,9 +669,28 @@ let sql_array=sql.split(";")
     if(common.trim(sql_array[i])!="")
     {
     let rs2 = await this.dbopService.db(dbname).query(sql_array[i])
+    if(rs2["errno"]!=null && rs2["errno"]>0)
+    {
+      let r:any={}
+      r.success=false
+      r.code=1
+      r.sql=sql_array[i]
+      r.msg=rs2["sqlMessage"]
+      return r
+    }
     rs.push(rs2)
   }
   }
+
+  if(rs!=null && rs.length==1)
+  {
+    if(common.len(rs[0])==1 && p["limit"]!=null  && p["limit"]==1)
+    rs=rs[0][0]
+    else
+   rs=rs[0]
+    
+  }
+ 
 
     
     return { "data": rs,code:0,msg:JSON.stringify(rs),success:true}
@@ -669,10 +702,11 @@ let sql_array=sql.split(";")
   //  console.log("dBService是", this.dBService)
   let param:any= Object.assign(params, query)
   let js=param["js_code"]
+  let p={}
   if(param?.params!=null && param?.params!="")
   {
     try{
-    let p=JSON.parse(param["params"])
+    p=JSON.parse(param["params"])
    // console.log("测试参数",p)
     for(let i in p)
     {
@@ -691,10 +725,21 @@ let sql_array=sql.split(";")
   dbname="default"
   let rs:any=[]
 
-let fun=new Function(js)
-rs=fun()
-return { "data": rs,code:0,msg:JSON.stringify(rs),success:true}
-  }
+try{
+  
+const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
+let fun = new AsyncFunction('dbop',"param", js);
+rs=await fun(this.dbopService,p)
+}
+catch(e)
+{
+ // console.log("执行js错误",e)
+  return { "data": rs,code:1,msg:e.toString(),success:false}
+}
+//return { "data": rs,code:0,msg:JSON.stringify(rs),success:true}
+
+return rs;  
+}
 
   @All('/TestDb')
   async TestDb(@Body() params: {}, @Query() query: {}) {

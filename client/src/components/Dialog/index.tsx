@@ -131,7 +131,7 @@ for(let i in valuse)
 //console.log("提交的数据",row)
 
 
-
+let ISClose=true
 if (props?.dialogSaveApi != null && props?.dialogSaveApi != "") {
   let dialogSaveApi = props?.dialogSaveApi
 
@@ -149,28 +149,33 @@ if (props?.dialogSaveApi != null && props?.dialogSaveApi != "") {
       if (results != null && results.code == 0)
      {
    
-      ExeConfirm(row)
+    ISClose=  ExeConfirm(row)
      message.success(results.msg)
+     if(ISClose)
+     closeModal()
      }
     });
 
 
 }else if (props?.confirm != null && props?.confirm != ""  ) {
-  ExeConfirm(row)
-  }
+  ISClose=  ExeConfirm(row)
+  if(ISClose)
   closeModal()
+  }
+
+ 
 }
 
 
 function ExeConfirm(row:any)
 {
-
+let ISClose=true
    //alert(props?.confirm)
    if(typeof(props?.confirm)=="string")
    {
    try {
      let confirm2 = eval(props?.confirm)
-     confirm2(row)
+     ISClose= confirm2(row)
    }
    catch (e) {
      //...
@@ -184,7 +189,7 @@ function ExeConfirm(row:any)
  try {
    let confirm2 = props?.confirm
  
-   confirm2(row)
+   ISClose=  confirm2(row)
  }
  catch (e) {
    //...
@@ -192,6 +197,8 @@ function ExeConfirm(row:any)
  }
  //dialog.close()
 }
+
+return ISClose
 }
 
 
