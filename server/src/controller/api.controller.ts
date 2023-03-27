@@ -287,9 +287,27 @@ async ManageTableList(@Body() params: {}, @Query() query: {})
     item["label"]="default|"+item["TABLE_NAME"]
     item["value"]="default|"+item["TABLE_NAME"]
     return item
-  })      
+  }) 
+  //获取其他库信息
+  let dbs:any=await this.dbopService.name("db").where("status=?",[1]).limit(100).select()
+ for(let i in dbs)
+ {
+   sql = `SELECT * FROM information_schema.tables where TABLE_TYPE="BASE TABLE" and table_schema =? limit 300`
+  let tablesList2 = await this.dbopService.db(dbs[i]["name"]).query(sql, [dbs[i]["dbname"]])
+ 
+   sql = `SELECT * FROM information_schema.views where table_schema =? limit 300`
+  viewList = await this.dbopService.db(dbs[i]["name"]).query(sql, [dbs[i]["dbname"]])
+  tablesList2=tablesList2.concat(viewList)
 
+  let  data2=tablesList2.map((item:any)=>{
+    item["label"]=dbs[i]["name"]+"|"+item["TABLE_NAME"]
+    item["value"]=dbs[i]["name"]+"|"+item["TABLE_NAME"]
+    return item
+  }) 
+  data=data.concat(data2)
+ }
 
+  
   return { success: true, msg: '加载数据成功', code: 0, "data":data};
 }
 
@@ -396,6 +414,37 @@ for(let i in rs)
 }
 
 let data={"dep_tables":menu_ids}
+return { success: true, msg: '加载数据成功', code: 0,data:data };
+}
+
+
+//获取某个部门的接口权限
+@All('/GetDepApiPower')
+async GetDepApiPower(@Body() params: {}, @Query() query: {})
+{
+  let param:any = Object.assign(params, query)
+
+let department_id=param?.id
+
+//let role=await this.dbopService.name("role").where("id>=?",[role_id]).select()
+
+let rs:any=[]
+if(department_id>0)
+ rs=await this.dbopService.name("department_api").where("department_id=?",[department_id]).limit(1000).select()
+else
+rs=await this.dbopService.name("department_api").where("department_id>=?",[0]).limit(1000).select()
+//console.log("对应",rs)
+ let menu_ids=[]
+if(rs !=null && common.isArray(rs))
+{
+for(let i in rs)
+{
+  if(rs[i].path!=null)
+  menu_ids.push(rs[i].path)
+}
+}
+
+let data={"dep_apis":menu_ids}
 return { success: true, msg: '加载数据成功', code: 0,data:data };
 }
 
@@ -560,6 +609,29 @@ if(table!=null && table!="")
     
      return { success: true, msg: '保存数据成功', code: 0, "data": {} };
   }
+
+  @All('/SaveDepApiPower')
+  async SaveDepApiPower(@Body() params: {}, @Query() query: {}) {
+    let param = Object.assign(params, query)
+    let dep_apis=param["dep_apis"]
+    let department_id=param["id"]
+    await this.dbopService.name("department_api").where("department_id=?", [department_id]).delete()
+    if(dep_apis==null || dep_apis=="")
+    {
+     return { success: true, msg: '已清空', code: 0, "data": {} };
+    }
+    let role_menu_arr=dep_apis.split(",")
+    //console.log("保存部门id",department_id,role_menu_arr)
+    
+    for(let i in role_menu_arr)
+    {
+      let path=role_menu_arr[i]
+      await this.dbopService.name("department_api").insert({department_id:department_id,path:path,add_time:common.unixtime10()})
+    }
+    
+     return { success: true, msg: '保存数据成功', code: 0, "data": {} };
+  }
+
   @All('/SaveRoleDepartMent')
   async SaveRoleDepartMent(@Body() params: {}, @Query() query: {}) {
     let param = Object.assign(params, query)
@@ -2135,6 +2207,29 @@ await   this.dbopService.name("page").insert(page)
 }
  return {"code":0,success:true,"msg":"复制成功"}
 }
+
+@All('/CopyApi')
+async CopyApi(@Body() params: {}, @Query() query: {}) {
+  let param = Object.assign(params, query)
+  let page_id = param["id"] != null ? param["id"] : 0
+  if(page_id<=0)
+  {
+    return {"code":1,success:false,"msg":"参数错误"}
+  }
+let page=await   this.dbopService.name("api").where("id=?", [page_id]).find()
+if(page!=null)
+{
+delete page["id"]
+page["title"]=page["title"]+"-副本"
+page["path"]=page["path"]+"2"
+page["upd_time"]=common.unixtime10()
+
+await   this.dbopService.name("api").insert(page)
+}
+return {"code":0,success:true,"msg":"复制成功"}
+}
+
+
   @All('/list')
   async list(@Body() params: {}) {
 //let page=params["page"]!=null?params["page"]:1

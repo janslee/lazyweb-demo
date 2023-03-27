@@ -162,6 +162,8 @@ let fields=[]
 let p=[]
 for (let key in parmas)
 {
+  if(parmas[key]==null)
+  continue
     fields.push(key)
     p.push(parmas[key].toString())
   }
