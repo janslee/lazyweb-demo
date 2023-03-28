@@ -12,7 +12,7 @@ import * as passport from '@midwayjs/passport';
 import { ReportMiddleware } from './middleware/report.middleware';
 import { JwtcustomMiddleware } from './middleware/jwtcustom.middleware';
 
-
+import { PowerMiddleware } from './middleware/power.middleware';
 import * as upload from '@midwayjs/upload';
 @Configuration({
   imports: [
@@ -36,7 +36,8 @@ export class ContainerLifeCycle {
   async onReady() {
     // add middleware
     this.app.useMiddleware(require('@koa/cors')())
-    this.app.useMiddleware([JwtcustomMiddleware,ReportMiddleware]);
+    this.app.useMiddleware([JwtcustomMiddleware,ReportMiddleware,PowerMiddleware]);
+
     this.app.use(
       staticCache({
         prefix: '/',

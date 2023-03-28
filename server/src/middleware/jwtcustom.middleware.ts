@@ -122,8 +122,8 @@ return
     let ignore = ctx.path.indexOf('/api/admin/login') !== -1;
 
     //console.log("当前路径",ctx.header?.origin)
-    if(ctx.header?.origin!=null && ctx.header.origin.indexOf("127.0.0.1")>=0)
-     ignore=true
+   // if(ctx.header?.origin!=null && ctx.header.origin.indexOf("127.0.0.1")>=0)
+   //  ignore=true
     if(ignore==false && ctx.path.indexOf('/api/user/login') !== -1)
     ignore=true
     if(ignore==false && ctx.path.indexOf('/api/login/account') !== -1)

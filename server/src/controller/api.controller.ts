@@ -7,6 +7,9 @@ import * as JSON5 from 'json5'
 import { create } from 'jsondiffpatch';
 import { JwtService } from '@midwayjs/jwt';
 import { JwtPassportMiddleware } from '../middleware/jwt.middleware';
+//import { JwtcustomMiddleware } from '../middleware/jwtcustom.middleware';
+
+//import { PowerMiddleware } from '../middleware/power.middleware';
 import { common } from '../lib/common';
 import { Files, Fields } from '@midwayjs/decorator';
 import { OSSService } from '@midwayjs/oss';
@@ -105,7 +108,7 @@ let rs=null
   }
 
 
-  @All('/Select')
+  @All('/Select' )
   async Select(@Body() params: {}, @Query() query: {}) {
     let param:any = Object.assign(params, query)
     let table="page"
@@ -282,12 +285,16 @@ async ManageTableList(@Body() params: {}, @Query() query: {})
    sql = `SELECT * FROM information_schema.views where table_schema =? limit 300`
   let viewList = await this.dbopService.db(params["db"]).query(sql, [DataBaseConfig.database])
   tablesList=tablesList.concat(viewList)
+let data=[]
 
-  let  data=tablesList.map((item:any)=>{
-    item["label"]="default|"+item["TABLE_NAME"]
-    item["value"]="default|"+item["TABLE_NAME"]
-    return item
-  }) 
+
+  for(let i in tablesList)
+  {
+    const item=tablesList[i]
+data.push({"title":"default|"+item["TABLE_NAME"]+"|select","key": item["key"]="default|"+item["TABLE_NAME"]+"|select"})
+data.push({"title":"default|"+item["TABLE_NAME"]+"|update","key": item["key"]="default|"+item["TABLE_NAME"]+"|update"})
+data.push({"title":"default|"+item["TABLE_NAME"]+"|delete","key": item["key"]="default|"+item["TABLE_NAME"]+"|delete"})
+}
   //获取其他库信息
   let dbs:any=await this.dbopService.name("db").where("status=?",[1]).limit(100).select()
  for(let i in dbs)
@@ -299,12 +306,17 @@ async ManageTableList(@Body() params: {}, @Query() query: {})
   viewList = await this.dbopService.db(dbs[i]["name"]).query(sql, [dbs[i]["dbname"]])
   tablesList2=tablesList2.concat(viewList)
 
-  let  data2=tablesList2.map((item:any)=>{
-    item["label"]=dbs[i]["name"]+"|"+item["TABLE_NAME"]
-    item["value"]=dbs[i]["name"]+"|"+item["TABLE_NAME"]
-    return item
-  }) 
-  data=data.concat(data2)
+
+
+  for(let i in tablesList2)
+  {
+    const item=tablesList2[i]
+data.push({"title":"default|"+item["TABLE_NAME"]+"|select","key": item["key"]="default|"+item["TABLE_NAME"]+"|select"})
+data.push({"title":"default|"+item["TABLE_NAME"]+"|update","key": item["key"]="default|"+item["TABLE_NAME"]+"|update"})
+data.push({"title":"default|"+item["TABLE_NAME"]+"|delete","key": item["key"]="default|"+item["TABLE_NAME"]+"|delete"})
+}
+
+
  }
 
   
@@ -1471,9 +1483,12 @@ for(let i in department_id_array)
   if(department_id_array[i]["id"]!=null)
   role_departments.push(department_id_array[i]["id"])
 }
-role_departments=common.uniqueArray(role_departments)
-admin["role_departments"] = role_departments
 
+
+role_departments=common.uniqueArray(role_departments)
+
+admin["role_departments"] = role_departments
+//console.log("role_department",role_department)
 //console.log("当前角色的部门",role_departments)
 const token:string=await this.jwt.sign(admin)
 admin["token"]=token
