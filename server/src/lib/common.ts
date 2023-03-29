@@ -230,6 +230,29 @@ return common.unixtime13().toString()+ext
     return outString;
   }
 
-
+//修改json权限
+  static fromJsonPower(jsondata: any, page_menu_ids: string[], power_menu_ids: string[]): void {
+    for (let x in jsondata) {
+   //   console.log("当前判断的元素是:"+x+"")
+      if (x!=null && page_menu_ids.indexOf(x)>=0   && power_menu_ids.indexOf(x) == -1) {
+      
+        jsondata[x]["x-display"] = "none";
+      }
+      if (jsondata[x]["x-component"] == "CTable") {
+        const columns = jsondata[x]["columns"];
+         for(let x1 in columns)
+         {
+          if (page_menu_ids.indexOf(columns[x1]["dataIndex"])   && power_menu_ids.indexOf(columns[x1]["dataIndex"]) == -1) {
+            columns[x1]["render"] = '{{()=>null}}';
+          }
+         }
+      }
+      if ( jsondata[x]["properties"] != null) {
+        common.fromJsonPower(jsondata[x]["properties"], page_menu_ids, power_menu_ids);
+      }
+  
+    }
+  }
+  
  }
    

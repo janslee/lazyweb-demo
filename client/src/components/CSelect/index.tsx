@@ -31,6 +31,8 @@ let fieldNames:any={ label: "label", value: "value", options: "options" }
         
             let options2=[];
             let fieldNames2= props?.fieldNames
+            if(fieldNames2==null)
+            fieldNames2={ label: 'label', value: 'value', options: 'options' }
            for (let i in data) {
             let row={}
             row["value"]=data[i][fieldNames2["value"]]

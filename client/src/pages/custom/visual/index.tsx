@@ -166,11 +166,14 @@ React:React
   ), [])
 
   const { match } = props;
-console.log("match",match)
+//console.log("match",match)
   const page_id = match?.params?.page_id != '' ?  match?.params?.page_id:"1";
+  const menu_id = match?.params?.menu_id !=null && match?.params?.menu_id !="" ?  match?.params?.menu_id:"";
 
   let params = new URLSearchParams()
   params.append('page_id', page_id)
+  params.append('is_show', "1")
+  params.append('menu_id', menu_id)
   let json:any=""
   //异步函数再包装一层
 
@@ -178,7 +181,7 @@ console.log("match",match)
 
   const syncCall = async()=>{
    
-    json =await common.post("/api/PageData?page_id="+page_id,params)
+  json =await common.post("/api/PageData?page_id="+page_id,params)
 
   try {
   

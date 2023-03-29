@@ -336,7 +336,7 @@
       {
         name: 'visual',
         icon: 'SmileOutlined',
-        path: '/custom/visual/:page_id',
+        path: '/custom/visual/:page_id/:menu_id',
         component: './custom/visual',
       },
       {

@@ -80,6 +80,13 @@ this.PageSize=PageSize
 return this
 }
 
+pageSize(PageSize:number|string=1)
+{
+if(typeof(PageSize)=="string")
+PageSize=Number(PageSize)
+this.PageSize=PageSize
+return this
+}
 limit(PageSize:number|string=1)
 {
 if(typeof(PageSize)=="string")

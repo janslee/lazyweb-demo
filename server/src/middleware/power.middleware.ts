@@ -14,6 +14,8 @@ export class PowerMiddleware implements IMiddleware<Context, NextFunction> {
     
 
     const  admin=ctx.state.user;
+    if(admin!=null)
+    {
    //console.log('当前用户是',admin,"123")
     const role_id=admin.role_id
     const role_departments=admin.role_departments
@@ -74,6 +76,8 @@ r.param=param
       return
     }
   }
+    }
+
   await next();
     };
   }

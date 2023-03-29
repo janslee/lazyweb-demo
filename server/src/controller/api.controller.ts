@@ -72,6 +72,58 @@ export class APIController {
     let where = "id =? "
 
     let rs = await this.dbopService.name("page").where(where, [param["page_id"]]).find()
+  
+    if(rs!=null && rs!="")
+    {
+     
+      try{
+     let json=JSON5.parse(rs["json"])
+    // let schema=json["schema"]
+     let page_menu_ids:any=await this.dbopService.name("menu").where("menu_type=?", ['ui']).limit(1000).select()
+
+    
+     if(page_menu_ids!=null)
+     page_menu_ids=page_menu_ids.map((x:any)=>x["name"])
+    
+     const  admin=this.ctx.state.user;
+    
+      if(admin!=null )
+      { 
+        
+      
+        const role_id=admin.role_id
+        if(role_id>1 && param["is_show"]!=null && param["is_show"]==1 && param["menu_id"]!=null && param["menu_id"]!="")
+        {
+        
+        const role_departments=admin.role_departments
+        let department_menu_ids:any=await  this.dBService.query("select * from "+this.dBService.Prefixs["default"]+"department_menu where department_id in (?) ", [role_departments])
+        if(department_menu_ids!=null)
+        department_menu_ids=department_menu_ids.map((x:any)=>x["menu_id"])
+
+       let power_menu_ids:any=await  this.dbopService.name("menu").where("id in (?)", [department_menu_ids]).select()
+       if(param["menu_id"])
+       power_menu_ids=common.findRecordsWithChildren(power_menu_ids,param["menu_id"])
+
+       power_menu_ids=power_menu_ids.map((x:any)=>x["name"])
+   //   console.log("需要判断权限的ui",page_menu_ids)
+       if(page_menu_ids!=null && page_menu_ids.length>0 )
+       {
+    
+        common.fromJsonPower(json,page_menu_ids,power_menu_ids)
+       }
+   
+    //  console.log("处理后的元素",JSON.stringify(json))
+      }
+      }
+  
+    // json["schema"]=schema
+      rs["json"]=JSON.stringify(json)
+    }
+    catch(e)
+    {
+console.log("json权限错误",e.message)
+    }
+    }
     return { success: true, msg: '获取页面数据成功', code: 0, "data": rs };
   }
 
@@ -209,7 +261,7 @@ dbname="default"
 
 
     }
-    console.log("搜索条件是:",where)
+   // console.log("搜索条件是:",where)
   }
 
     let pageSize=12
@@ -227,8 +279,8 @@ dbname="default"
       order=order.replace("end","")
       
      }
-     console.log("where",where)
-     console.log("p",p)
+    // console.log("where",where)
+    // console.log("p",p)
      let rs =null
      let total=0
      if(param?.table_name!=null)
@@ -273,6 +325,25 @@ async ManageMenuList(@Body() params: {}, @Query() query: {})
   common.GenTree(WebMenu,MenuDb,"children")
                                  
   return { success: true, msg: '加载数据成功', code: 0, "data":WebMenu};
+}
+
+
+@All('/TopMenuList')
+async TopMenuList(@Body() params: {}, @Query() query: {})
+{
+  let MenuDb:any=await this.dbopService.name("menu").where("menu_type=? or menu_type=?",['menu_dir','tab']).pagesize(1000).page(1).order("sort asc").select()
+  let  WebMenu=MenuDb.map((item:any)=>{
+ 
+    item["label"]=item["title"]
+    item["value"]=item["id"]
+    return item
+    })
+  let WebMenu2=[]
+  common.GenTree(WebMenu2,WebMenu,"children")
+
+
+  WebMenu2.splice(0, 0, { label: "无上级", value: -1 });                  
+  return { success: true, msg: '加载数据成功', code: 0, "data":WebMenu2};
 }
 @All('/ManageTableList')
 async ManageTableList(@Body() params: {}, @Query() query: {})
@@ -1918,6 +1989,10 @@ if(MenuDb[i]["path"]==null || MenuDb[i]["path"]=="")
 {
   if(role_id==1)
 MenuDb[i]["path"]=MenuDb[i]["name"]
+}
+if(MenuDb[i]["path"]!=null )
+{
+  MenuDb[i]["path"]=MenuDb[i]["path"].toString()+"/"+MenuDb[i]["id"]
 }
 
 

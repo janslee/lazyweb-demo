@@ -44,6 +44,46 @@ const path=this.ctx.path
 
 let param:any= Object.assign(params, query)
    const funName = path.replace("/uapi/", "");
+//判断权限
+const  admin=this.ctx.state.user;
+    if(admin!=null )
+    {
+   //console.log('当前用户是',admin,"123")
+    const role_id=admin.role_id
+    const role_departments=admin.role_departments
+    if(role_id>1)
+    {
+   const path=this.ctx.path
+  
+   //判断下有没有校验信息
+
+   let funName = path.replace("/uapi/", "");
+
+
+  let rpower:any={ success: true,data:[], msg: "权限判断", "code": 0, path: path }
+
+
+  let tables:any=await  this.dBService.query("select * from "+this.dBService.Prefixs["default"]+"department_api where department_id in (?) and path=?", [role_departments,funName])
+
+  if(tables==null || tables.length==0)
+  {
+    rpower.data=null
+    rpower.code=10
+    rpower.success=true
+    rpower.msg="无接口权限"
+
+  }
+
+    if(rpower.code!=0)
+    {
+
+      return rpower
+    }
+  }
+    }
+    //判断权限结束
+
+
 let r:any={ success: true,param:param,data:[], msg: "用户api", "code": 0, path: path, "funName": funName }
    
     let api:any=await  this.dBService.query("select * from "+this.dBService.Prefixs["default"]+"api where path=?", [funName])
