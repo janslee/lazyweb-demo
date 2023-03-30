@@ -100,12 +100,42 @@ export class APIController {
         if(department_menu_ids!=null)
         department_menu_ids=department_menu_ids.map((x:any)=>x["menu_id"])
 
-       let power_menu_ids:any=await  this.dbopService.name("menu").where("id in (?)", [department_menu_ids]).select()
+       let power_menu_ids:any=await  this.dbopService.name("menu").where("id in (?)", [department_menu_ids]).limit(1000).select()
+       //取出菜单的上级
+       if(power_menu_ids!=null && power_menu_ids.length>0)
+       {
+        let pids1=power_menu_ids.map((x:any)=>
+        {
+          if(x["pid"]>0)
+         return x["pid"]
+        }
+      
+        )
+        let power_menu_ids2:any=await  this.dbopService.name("menu").where("id in (?)", [pids1]).limit(1000).select()
+        power_menu_ids= power_menu_ids.concat(power_menu_ids2)
+        if(power_menu_ids2!=null && power_menu_ids2.length>0)
+        {
+         let pids2=power_menu_ids.map((x:any)=>
+         {
+           if(x["pid"]>0)
+          return x["pid"]
+         }
+       
+         )
+         let power_menu_ids3:any=await  this.dbopService.name("menu").where("id in (?)", [pids2]).limit(1000).select()
+         power_menu_ids=power_menu_ids.concat(power_menu_ids3)
+        }
+
+       }
+       console.log("当前角色拥有的权限0",power_menu_ids)
        if(param["menu_id"])
-       power_menu_ids=common.findRecordsWithChildren(power_menu_ids,param["menu_id"])
+       power_menu_ids=common.findRecordsWithChildren(power_menu_ids,parseInt(param["menu_id"]))
+       console.log("当前角色拥有的权限3",power_menu_ids)
 
        power_menu_ids=power_menu_ids.map((x:any)=>x["name"])
-   //   console.log("需要判断权限的ui",page_menu_ids)
+       
+     console.log("需要判断权限的ui",page_menu_ids)
+     console.log("当前角色拥有的权限",power_menu_ids)
        if(page_menu_ids!=null && page_menu_ids.length>0 )
        {
     
@@ -135,7 +165,7 @@ console.log("json权限错误",e.message)
     let dbname=param?.dbname
 if(dbname==null || dbname=="")
 dbname="default"
-
+let fields=param?.fields!=null && param?.fields!=""?param.fields:"*"
     let id=param?.id
     delete param["id"]
 
@@ -144,12 +174,12 @@ let rs=null
     if(param?.table_name!=null)
     {
     table=param?.table_name
-     rs = await this.dbopService.db(dbname).name(table).where(where, [id]).find()
+     rs = await this.dbopService.db(dbname).name(table).fields(fields).where(where, [id]).find()
   }
   if(param?.table!=null)
   {
     table=param?.table
-    rs = await this.dbopService.db(dbname).table(table).where(where, [id]).find()
+    rs = await this.dbopService.db(dbname).table(table).fields(fields).where(where, [id]).find()
   }
     if(rs!=null && table=="admin")
     {
@@ -281,17 +311,18 @@ dbname="default"
      }
     // console.log("where",where)
     // console.log("p",p)
+    let fields=param?.fields!=null && param?.fields!=""?param.fields:"*"
      let rs =null
      let total=0
      if(param?.table_name!=null)
      {
-     rs = await this.dbopService.db(dbname).name(table).pagesize(pageSize).page(page).order(order).where(where, p).select()
+     rs = await this.dbopService.db(dbname).name(table).fields(fields).pagesize(pageSize).page(page).order(order).where(where, p).select()
     total=await this.dbopService.db(dbname).name(table).where(where, p).count("*")
   }
 
   if(param?.table!=null)
   {
-  rs = await this.dbopService.db(dbname).table(table).pagesize(pageSize).page(page).order(order).where(where, p).select()
+  rs = await this.dbopService.db(dbname).table(table).fields(fields).pagesize(pageSize).page(page).order(order).where(where, p).select()
  total=await this.dbopService.db(dbname).table(table).where(where, p).count("*")
 }
 let data=[]
@@ -345,6 +376,9 @@ async TopMenuList(@Body() params: {}, @Query() query: {})
   WebMenu2.splice(0, 0, { label: "无上级", value: -1 });                  
   return { success: true, msg: '加载数据成功', code: 0, "data":WebMenu2};
 }
+
+
+
 @All('/ManageTableList')
 async ManageTableList(@Body() params: {}, @Query() query: {})
 {
@@ -362,9 +396,9 @@ let data=[]
   for(let i in tablesList)
   {
     const item=tablesList[i]
-data.push({"title":"default|"+item["TABLE_NAME"]+"|select","key": item["key"]="default|"+item["TABLE_NAME"]+"|select"})
-data.push({"title":"default|"+item["TABLE_NAME"]+"|update","key": item["key"]="default|"+item["TABLE_NAME"]+"|update"})
-data.push({"title":"default|"+item["TABLE_NAME"]+"|delete","key": item["key"]="default|"+item["TABLE_NAME"]+"|delete"})
+data.push({"title":"default|"+item["TABLE_NAME"]+"","key": item["key"]="default|"+item["TABLE_NAME"]})
+//data.push({"title":"default|"+item["TABLE_NAME"]+"|update","key": item["key"]="default|"+item["TABLE_NAME"]+"|update"})
+//data.push({"title":"default|"+item["TABLE_NAME"]+"|delete","key": item["key"]="default|"+item["TABLE_NAME"]+"|delete"})
 }
   //获取其他库信息
   let dbs:any=await this.dbopService.name("db").where("status=?",[1]).limit(100).select()
@@ -379,12 +413,12 @@ data.push({"title":"default|"+item["TABLE_NAME"]+"|delete","key": item["key"]="d
 
 
 
-  for(let i in tablesList2)
+  for(let j in tablesList2)
   {
-    const item=tablesList2[i]
-data.push({"title":"default|"+item["TABLE_NAME"]+"|select","key": item["key"]="default|"+item["TABLE_NAME"]+"|select"})
-data.push({"title":"default|"+item["TABLE_NAME"]+"|update","key": item["key"]="default|"+item["TABLE_NAME"]+"|update"})
-data.push({"title":"default|"+item["TABLE_NAME"]+"|delete","key": item["key"]="default|"+item["TABLE_NAME"]+"|delete"})
+    const item=tablesList2[j]
+data.push({"title":dbs[i]["name"]+"|"+item["TABLE_NAME"],"key": item["key"]=dbs[i]["name"]+"|"+item["TABLE_NAME"]})
+//data.push({"title":"default|"+item["TABLE_NAME"]+"|update","key": item["key"]="default|"+item["TABLE_NAME"]+"|update"})
+//data.push({"title":"default|"+item["TABLE_NAME"]+"|delete","key": item["key"]="default|"+item["TABLE_NAME"]+"|delete"})
 }
 
 
@@ -584,7 +618,7 @@ dbname="default"
 let table_name=param["table_name"]
 delete param["table_name"]
 let rs=null
-if(id!=null)
+if(id!=null && id>0)
 {
 if(table!=null && table!="")
      rs = await this.dbopService.db(dbname).table(table).where(where, [id]).update(params)
@@ -593,6 +627,7 @@ if(table!=null && table!="")
     } 
    else
    {
+   // console.log("插入准备","table:"+table,"table_name:"+table_name,params)
     if(table!=null && table!="")
      rs = await this.dbopService.db(dbname).table(table).insert(params)
      if(table_name!=null && table_name!="")
@@ -674,21 +709,17 @@ if(table!=null && table!="")
   @All('/SaveDepTablePower')
   async SaveDepTablePower(@Body() params: {}, @Query() query: {}) {
     let param = Object.assign(params, query)
-    let dep_tables=param["dep_tables"]
+
+    let table_name=param["tables"]
+    let select_columns=param["select_columns"]
+    let update_columns=param["update_columns"]
+    let is_delete=param["is_delete"]
     let department_id=param["id"]
-    await this.dbopService.name("department_table").where("department_id=?", [department_id]).delete()
-    if(dep_tables==null || dep_tables=="")
-    {
-     return { success: true, msg: '已清空', code: 0, "data": {} };
-    }
-    let role_menu_arr=dep_tables.split(",")
-    //console.log("保存部门id",department_id,role_menu_arr)
-    
-    for(let i in role_menu_arr)
-    {
-      let table_name=role_menu_arr[i]
-      await this.dbopService.name("department_table").insert({department_id:department_id,table_name:table_name,add_time:common.unixtime10()})
-    }
+    await this.dbopService.name("department_table").where("department_id=? and table_name=?", [department_id,table_name]).delete()
+
+ 
+  await this.dbopService.name("department_table").insert({department_id:department_id,"select_columns":select_columns,"update_columns":update_columns,"is_delete":is_delete,table_name:table_name,add_time:common.unixtime10()})
+  
     
      return { success: true, msg: '保存数据成功', code: 0, "data": {} };
   }
@@ -1960,11 +1991,38 @@ if (menus==null || menus.length==0)
 }
 else
 {
-  //console.log("获取到的菜单",menus)
+
   const menu_ids = menus.map(record => record.menu_id);
+ 
+MenuDb=await this.dbopService.name("menu").fields("name,url,menu_type,title,path,pid,id,component,icon").where("id in (?) ",[menu_ids]).order("sort asc").pagesize(1000).select()
 
-  MenuDb=await this.dbopService.name("menu").fields("name,url,menu_type,title,path,pid,id,component,icon").where("id in ? ",[menu_ids]).order("sort asc").pagesize(1000).select()
+//console.log("获取到的菜单MenuDb",MenuDb)
+//获取父类id
+if(MenuDb!=null && MenuDb.length>0)
+{
+const parent_ids = MenuDb.map((record) =>{
+if(record.pid>0)
+ return  record.pid
+});
+if(parent_ids!=null && parent_ids.length>0)
+{
+let MenuDb2:any=await this.dbopService.name("menu").fields("name,url,menu_type,title,path,pid,id,component,icon").where("id in (?) ",[parent_ids]).order("sort asc").pagesize(1000).select()
+MenuDb=MenuDb.concat(MenuDb2)
 
+//获取父类id2
+const parent_ids3 = MenuDb2.map((record) =>{
+  if(record.pid>0)
+   return  record.pid
+  });
+  if(parent_ids3!=null && parent_ids3.length>0)
+{
+  let MenuDb3=await this.dbopService.name("menu").fields("name,url,menu_type,title,path,pid,id,component,icon").where("id in (?) ",[parent_ids3]).order("sort asc").pagesize(1000).select()
+  MenuDb=MenuDb.concat(MenuDb3)
+}
+}
+
+
+}
 }
 }
  else
@@ -2480,12 +2538,92 @@ let rs:any=await this.dbopService.name("db").where("status>?",[0]).select()
 rs.splice(0, 0, {name:"default",title:"默认数据库"});
 return { success: true, msg: '加载数据成功', code: 0,data:rs };
 }
-
-
-@All('/*')
+//获取某个表格的所有字段
+@All('/columns')
 async common(@Body() params: {}, @Query() query: {}) {
+  const param:any = Object.assign(params, query)
+  let table=param?.table
+  if(table==null || table=="")
+  {
+    return { success: true, msg: '表名不能为空', code: 1,data:null };
+  }
+ const [table_schema,table_name]=table.split("|")
 
-return { success: true, msg: '加载数据成功2', code: 0,path:this.ctx.path};
+ const config= this.app.getConfig()
+let DataBaseConfig= config.mysql
+let dbname=DataBaseConfig.database
+if(table_schema!="default")
+{
+  let dbrow:any=await this.dbopService.name("db").where("name=?",[table_schema]).find()
+  if(dbrow!=null)
+  {
+    dbname=dbrow["dbname"]
+  }
+}
+
+let sql = `SELECT * FROM information_schema.COLUMNS WHERE  table_schema =? and table_name=? `
+let COLUMNS = await this.dbopService.db(table_schema).query(sql, [dbname,table_name])
+
+COLUMNS=COLUMNS.map((item, index, array) => {
+  let row = { "title": item["COLUMN_NAME"] }
+  row["key"] = item["COLUMN_NAME"]
+  return row;
+}
+
+)
+//获取对应的数据
+let select_columns=[]
+let update_columns=[]
+let is_delete=0
+const department_table=await this.dbopService.name("department_table").where("table_name=?",[table]).find()
+if(department_table!=null)
+{
+  if(department_table["select_columns"]!=null && department_table["select_columns"]!="")
+  select_columns=department_table["select_columns"].split(",")
+
+  if(department_table["update_columns"]!=null && department_table["update_columns"]!="")
+  update_columns=department_table["update_columns"].split(",")
+  is_delete=department_table["is_delete"]
+
+}
+return { success: true, msg: '加载数据成功', code: 0,data:COLUMNS,select_columns:select_columns,update_columns:update_columns,is_delete:is_delete};
+}
+
+
+//获取参与鉴权的表
+@All('/GetTablePower')
+async GetTablePower(@Body() params: {}, @Query() query: {}) {
+  let rs:any=await this.dbopService.name("table_power").limit(1000).select()
+ let  table_power=rs.map((item, index, array) => {  
+  return item.table_name
+})
+  return { success: true, msg: '加载数据成功', code: 0,data:{"table_power":table_power} };
+}
+
+@All('/SaveTablePower')
+async SaveTablePower(@Body() params: {}, @Query() query: {}) {
+  const param:any = Object.assign(params, query)
+  await this.dbopService.name("table_power").delete()
+  if(param!=null)
+  {
+    let table_power=param?.table_power
+    if(table_power!=null)
+    {
+      table_power=table_power.split(",")
+      for(let i in table_power)
+      {
+        let table_name=table_power[i]
+        await this.dbopService.name("table_power").insert({table_name:table_name})
+      }
+    }
+  }
+
+  return { success: true, msg: '保存数据成功', code: 0,data:{} };
+}
+
+@All('/test')
+async test(@Body() params: {}, @Query() query: {}) {
+  return { success: true, msg: '保存数据成功', code: 0,data:{"params":params} };
 }
 
 }

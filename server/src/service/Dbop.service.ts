@@ -185,7 +185,7 @@ for (let key in parmas)
  let id:number=0
   if(rs!=null && rs?.insertId!=null)
   id=rs?.insertId
-//console.log("rs",rs.affectedRows)
+//console.log("插入数据结果",rs)
 this.pool="default"
 return id
 }

@@ -190,15 +190,15 @@ React:React
      const { form: formProps, schema } = json
      setFprops(formProps)
      setFschema(schema)
-console.log("form",form)
-console.log("schema",schema)
+//console.log("form",form)
+//console.log("schema",schema)
   //form.setValues({"aa":"有数据"},'merge')
 
 //初始化api开始
 //form.setInitialValues({"ghj":"牛叉"},'merge')
 let initApi= formProps?.initApi
-console.log("fprops",fprops)
-console.log("fschema",fschema)
+//console.log("fprops",fprops)
+//console.log("fschema",fschema)
 
 if(initApi!=null && initApi!="")
 {
@@ -211,7 +211,7 @@ fetch(initApi,{
   }
 })
 .then((res) => res.json())
-.then(({ results }) => {
+.then((results) => {
 //console.log("初始化结果",results);
 if(results!=null && results.data!=null)
 form.setInitialValues(results.data,'merge')
@@ -260,9 +260,16 @@ fetch(api,{
   }
 })
 .then((res) => res.json())
-.then(({ results }) => {
-console.log("保存结果",results);
-
+.then((results) => {
+//console.log("保存结果",results);
+if(results.code==0)
+{
+  message.success("保存成功")
+}
+else
+{
+  message.error("保存失败")
+}
 
 });
 
