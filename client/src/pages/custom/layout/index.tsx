@@ -1,52 +1,104 @@
 import React from 'react'
-import { createForm } from '@formily/core'
-import { FormProvider, FormConsumer, Field } from '@formily/react'
-import {  message,notification } from 'antd';
 import {
   FormItem,
-  FormLayout,
   Input,
+  Editable,
+  Select,
+  DatePicker,
+  ArrayItems,
   FormButtonGroup,
   Submit,
+  Space,
 } from '@formily/antd'
+import { createForm } from '@formily/core'
+import { FormProvider, createSchemaField } from '@formily/react'
+
+const SchemaField = createSchemaField({
+  components: {
+    FormItem,
+    DatePicker,
+    Editable,
+    Space,
+    Input,
+    Select,
+    ArrayItems,
+  },
+})
 
 const form = createForm()
-function SaveData(data:any)
-{
-console.log("数据是",data)
-//alert("获取数据成功"+JSON.stringify(data))
-//notification
-message.warning("获取数据成功"+JSON.stringify(data))
-notification.success({"message":"获取数据成功"+JSON.stringify(data)})
-}
+
 export default () => {
   return (
     <FormProvider form={form}>
-      <FormLayout layout="vertical">
-        <Field
-          name="cqa"
-          title="输入框"
-          required
-          initialValue="初始化"
-          decorator={[FormItem]}
-          component={[Input]}
-        />
-      </FormLayout>
-      <FormConsumer>
-        {() => (
-          <div
-            style={{
-              marginBottom: 20,
-              padding: 5,
-              border: '1px dashed #666',
-            }}
-          >
-            实时响应：{form.values.cqa}
-          </div>
-        )}
-      </FormConsumer>
+      <SchemaField>
+       
+        <SchemaField.Array
+          name="array"
+          title="对象数组"
+          x-decorator="FormItem"
+          x-component="ArrayItems"
+        >
+          <SchemaField.Object>
+            <SchemaField.Void x-component="Space">
+              <SchemaField.Void
+                x-decorator="FormItem"
+                x-component="ArrayItems.SortHandle"
+              />
+              <SchemaField.String
+                x-decorator="FormItem"
+                required
+                title="日期"
+                name="date"
+                x-component="DatePicker.RangePicker"
+                x-component-props={{
+                  style: {
+                    width: 160,
+                  },
+                }}
+              />
+              <SchemaField.String
+                x-decorator="FormItem"
+                required
+                title="输入框"
+                name="input"
+                x-component="Input"
+              />
+              <SchemaField.String
+                x-decorator="FormItem"
+                required
+                title="选择框"
+                name="select"
+                enum={[
+                  { label: '选项1', value: 1 },
+                  { label: '选项2', value: 2 },
+                ]}
+                x-component="Select"
+                x-component-props={{
+                  style: {
+                    width: 160,
+                  },
+                }}
+              />
+        
+              <SchemaField.Void
+                x-decorator="FormItem"
+                x-component="ArrayItems.Remove"
+              />
+              <SchemaField.Void
+                x-decorator="FormItem"
+                x-component="ArrayItems.Copy"
+              />
+            </SchemaField.Void>
+          </SchemaField.Object>
+          <SchemaField.Void
+            x-component="ArrayItems.Addition"
+            title="添加条目"
+          />
+        </SchemaField.Array>
+       
+      </SchemaField>
       <FormButtonGroup>
-        <Submit onSubmit={SaveData}>提交</Submit>
+        <Submit onSubmit={console.log}>提交</Submit>
       </FormButtonGroup>
     </FormProvider>
   )

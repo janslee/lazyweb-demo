@@ -1,6 +1,6 @@
-import {  IMiddleware, Inject } from '@midwayjs/core';
+import {  App, IMiddleware, Inject } from '@midwayjs/core';
 import { Middleware } from '@midwayjs/decorator';
-import { NextFunction, Context } from '@midwayjs/koa';
+import { NextFunction, Context ,Application} from '@midwayjs/koa';
 
 import { DBService } from '../service/DB.service';
 @Middleware()
@@ -8,37 +8,32 @@ export class PowerMiddleware implements IMiddleware<Context, NextFunction> {
   @Inject()
   dBService: DBService;
   
+
+  @App()
+  app: Application;
+
+
+
   resolve() {
     return async (ctx: Context, next: NextFunction) => {
 
       //ctx.request.body.cqa="测试了权限"
 
     const  admin=ctx.state.user;
-    if(admin!=null)
-    {
-   //console.log('当前用户是',admin,"123")
-    const role_id=admin.role_id
-    const role_departments=admin.role_departments
-    if(role_id>1)
-    {
-   const path=ctx.path
-  
+    const path=ctx.path
+    let act = path.replace("/api/", "");
+    if(act=="Select" || act=="Find")
+    act="select"
+    if(act=="SaveEdit")
+    act="update"
+    if(act=="Delete")
+    act="delete"
    //判断下有没有校验信息
    const body=ctx.request.body!=null?ctx.request.body:{}
    const query=ctx.request.query!=null?ctx.request.query:{}
    let param:any= Object.assign(body, query)
-   let act = path.replace("/api/", "");
-if(act=="Select" || act=="Find")
-act="select"
-if(act=="SaveEdit")
-act="update"
-if(act=="Delete")
-act="delete"
- ctx.status = 200;
-  let r:any={ success: true,data:[], msg: "权限判断", "code": 0, path: path }
-if(param["table_name"]!=null || param["table"]!=null)
-{
- 
+   
+     
   let table=""
   if(param["table_name"]!=null)
   {
@@ -52,6 +47,78 @@ if(param["table_name"]!=null || param["table"]!=null)
       table="default|"+this.dBService.Prefixs["default"]+table
     }
   }
+//获取字段信息
+let columns=[]
+if( act!="delete")
+{
+  const [table_schema,table_name]=table.split("|")
+
+  const config= this.app.getConfig()
+  let DataBaseConfig= config.mysql
+  let dbname=DataBaseConfig.database
+  if(table_schema!="default")
+  {
+    let dbrow:any=await this.dBService.query("select * from "+this.dBService.Prefixs["default"]+" where name=?",[table_schema])
+    if(dbrow!=null && dbrow.length>0)
+    {dbname=dbname[0]
+      dbname=dbrow["dbname"]
+    }
+  }
+  let sql = `SELECT * FROM information_schema.COLUMNS WHERE  table_schema =? and table_name=? `
+let COLUMNS:any = await this.dBService.query(sql, [dbname,table_name],table_schema)
+
+columns=COLUMNS.map((item, index, array) => {
+  return item["COLUMN_NAME"];
+})
+}
+
+    if(admin!=null)
+    {
+
+ if(table!="default|"+this.dBService.Prefixs["default"]+"admin" && columns.indexOf("admin_id")>=0)
+{
+ if(act=="update" && !param["id"])
+ {
+param["admin_id"]=admin.id
+ }
+ if(act=="select" )
+ {
+  ctx.request.body["where"]=" admin_id="+admin.id+" "
+ }
+
+}
+
+if(table!="default|"+this.dBService.Prefixs["default"]+"admin" && columns.indexOf("department_id")>=0)
+{
+ if(act=="update" && !param["id"])
+ {
+param["department_id"]=admin.department_id
+ }
+
+ if(act=="select" )
+ {
+  if(admin.role_departments!=null && admin.role_departments.length>0)
+  ctx.request.body["where"]=" (admin_id="+admin.id+" or department_id in ("+admin.role_departments.join(",")+")) "
+ }
+
+}
+
+   //console.log('当前用户是',admin,"123")
+    const role_id=admin.role_id
+    const role_departments=admin.role_departments
+    if(role_id>1)
+    {
+  
+  
+
+ ctx.status = 200;
+  let r:any={ success: true,data:[], msg: "权限判断", "code": 0, path: path }
+
+  if(param["table_name"]!=null || param["table"]!=null)
+{
+
+
+
 //判断此表格是否加了了鉴权
 let table_power:any=await  this.dBService.query("select * from "+this.dBService.Prefixs["default"]+"table_power where table_name=?", [table])
 if(table_power!=null && table_power.length>0)
@@ -127,6 +194,13 @@ r.param=param
       ctx.body = r;
    
       return
+    }
+  }
+  else
+  {
+    if(act=="select" )
+    {
+     ctx.request.body["where"]=""
     }
   }
     }

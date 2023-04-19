@@ -24,6 +24,8 @@
         "ant-design"
     ],
     "dependencies": {
-        "concurrently": "^7.5.0"
+        "@monaco-editor/react": "^4.5.0",
+        "concurrently": "^7.5.0",
+        "react-quill": "^2.0.0"
     }
 }

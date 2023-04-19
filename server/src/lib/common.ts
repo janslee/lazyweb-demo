@@ -44,7 +44,7 @@ static unixtime10= (d = new Date()):string => {
 
 static DateTime = (unixtime = 0) => {
        
- let   d = new Date(unixtime);
+ let   d = new Date(unixtime*1000);
 return d
 }
 //格式化日期

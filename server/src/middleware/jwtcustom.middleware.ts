@@ -124,10 +124,16 @@ return
     //console.log("当前路径",ctx.header?.origin)
    // if(ctx.header?.origin!=null && ctx.header.origin.indexOf("127.0.0.1")>=0)
    //  ignore=true
-   if(ignore==false && ctx.path.indexOf('/api/SaveEdit') !== -1)
+   if(ignore==false && ctx.path.indexOf('/api/Upload') !== -1)
+   ignore=true
+   if(ignore==false && ctx.path.indexOf('/api/Find') !== -1)
+   ignore=true
+   if(ignore==false && ctx.path.indexOf('/api/SavePageData') !== -1)
   ignore=true
   if(ignore==false && ctx.path.indexOf('/api/PageData') !== -1)
- ignore=true
+ignore=true
+if(ignore==false && ctx.path.indexOf('/api/GetPageDataWithHistory') !== -1)
+ignore=true
     if(ignore==false && ctx.path.indexOf('/api/user/login') !== -1)
     ignore=true
     if(ignore==false && ctx.path.indexOf('/api/login/account') !== -1)

@@ -48,7 +48,11 @@ import  IconSelect from '../../../components/IconSelect'
 import  Select  from   '../../../components/CSelect'
 import  Switch  from   '../../../components/CSwitch'
 import  Editor  from   '../../../components/Editor'
-import { Card, Slider, Rate,Modal,message  } from 'antd'
+import  CList  from   '../../../components/CList'
+import  Custom  from   '../../../components/Custom'
+import  Text  from   '../../../components/Text'
+import  RichText  from   '../../../components/RichText'
+import { Card, Slider, Rate,Modal,message } from 'antd'
 
 
 import { eventBus } from '../../../lib/Provider'
@@ -66,14 +70,7 @@ let RemoveListen=(hadlename:string,fun:any)=>{
 let SendEmit=(hadlename:string,msg:any)=>{
   eventBus.emit(hadlename, msg);
 }
-const Text: React.FC<{
-  value?: string
-  content?: string
-  mode?: 'normal' | 'h1' | 'h2' | 'h3' | 'p'
-}> = ({ value, mode, content, ...props }) => {
-  const tagName = mode === 'normal' || !mode ? 'div' : mode
-  return React.createElement(tagName, props, value || content)
-}
+
 /*
 const ArrayTable: React.FC = (props) => {
 
@@ -126,7 +123,10 @@ const SchemaField = createSchemaField({
     Modal,
     Dialog,
     IconSelect,
-    Editor
+    Editor,
+    CList,
+    Custom,
+    RichText
   },
 
 scope: {

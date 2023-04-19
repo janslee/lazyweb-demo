@@ -31,12 +31,8 @@ export const Dialog2 = (props: any) => {
       
         let initialValues = {}
         //判断是否需要初始化
-        if (props?.openFunc != null) {
-          let openFunc = eval(props?.openFunc)
-          initialValues = openFunc(row)
-
-        }
-        else if (props?.dialogInitApi != null && props?.dialogInitApi != "" && msg!=null) {
+   
+       if (props?.dialogInitApi != null && props?.dialogInitApi != "" && msg!=null) {
           let dialogInitApi = props?.dialogInitApi
     
 
@@ -74,10 +70,21 @@ export const Dialog2 = (props: any) => {
     
                 props?.$form.setValues({...oldvalues,...row})
                 props?.$form.validate("*")
+
+                if (props?.openFunc != null) {
+                  let openFunc = eval(props?.openFunc)
+                  initialValues = openFunc(row)
+        
+                }
               }
 
             });
 
+
+        }
+        else if(props?.openFunc != null) {
+          let openFunc = eval(props?.openFunc)
+          initialValues = openFunc(row)
 
         }
         else

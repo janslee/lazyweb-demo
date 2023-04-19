@@ -49,8 +49,9 @@ export class APIController {
   async getConfig(@Body() params: {}, @Query() query: {}) {
     let c = this.app.getApplicationContext();
     c.setAttr("aaa", "bb")
-
-    return this.app.getConfig()
+   const config= this.app.getConfig()
+   const ossconfig=config["oss"]["clients"]["default"]
+    return ossconfig
   }
 
 
@@ -158,13 +159,68 @@ console.log("json权限错误",e.message)
   }
 
 
+  @All('/SavePageData')
+  async SavePageData(@Body() params: {}, @Query() query: {}) {
+    let param = Object.assign(params, query)
+
+if(param["json"]!=null && param["id"]!="") 
+{
+await this.dbopService.name("page").where("id=?", [param["id"]]).update({json:param["json"],"upd_time":common.unixtime10()})
+
+await this.dbopService.name("page_history").insert({json:param["json"],"upd_time":common.unixtime10(),"page_id":param["id"]})
+//删除多余的记录
+const sql=`
+DELETE FROM `+this.dBService.Prefixs["default"]+`page_history  
+WHERE page_id = `+param["id"]+`  
+AND id NOT IN (  
+select a.* from 
+  (SELECT id  
+  FROM `+
+  this.dBService.Prefixs["default"]
+  +`page_history  
+  WHERE page_id = `+param["id"]+`  
+  ORDER BY id DESC  
+  LIMIT 3  ) a
+)
+`
+await this.dbopService.query(sql,[])
+}
+else
+{
+return { success: true, msg: '参数错误', code: 1, "data": null };
+}
+return { success: true, msg: '保存数据成功', code: 0, "data": {} };
+}
+
+
+@All('/SavePageDataWhoutlog')
+async SavePageDataWhoutlog(@Body() params: {}, @Query() query: {}) {
+  let param = Object.assign(params, query)
+
+if(param["json"] && param["id"]) 
+{
+await this.dbopService.name("page").where("id=?", [param["id"]]).update({json:param["json"],"upd_time":common.unixtime10()})
+
+}
+else
+{
+await this.dbopService.name("page").insert({"name":param["name"],json:param["json"],"add_time":common.unixtime10(),"upd_time":common.unixtime10()})
+
+}
+return { success: true, msg: '保存数据成功', code: 0, "data": {} };
+}
+
+
   @All('/Find')
   async Find(@Body() params: {}, @Query() query: {}) {
     let param:any = Object.assign(params, query)
+   
     let table="page"
-    let dbname=param?.dbname
-if(dbname==null || dbname=="")
-dbname="default"
+ let   dbname="default"
+  
+if(param?.table_name!="db" &&  param?.dbname)
+ dbname=param?.dbname
+
 let fields=param?.fields!=null && param?.fields!=""?param.fields:"*"
     let id=param?.id
     delete param["id"]
@@ -174,12 +230,15 @@ let rs=null
     if(param?.table_name!=null)
     {
     table=param?.table_name
+  
      rs = await this.dbopService.db(dbname).name(table).fields(fields).where(where, [id]).find()
-  }
+   
+    }
   if(param?.table!=null)
   {
     table=param?.table
     rs = await this.dbopService.db(dbname).table(table).fields(fields).where(where, [id]).find()
+ 
   }
     if(rs!=null && table=="admin")
     {
@@ -193,6 +252,7 @@ let rs=null
   @All('/Select' )
   async Select(@Body() params: {}, @Query() query: {}) {
     let param:any = Object.assign(params, query)
+   
     let table="page"
     if(param?.table_name!=null)
     table=param?.table_name
@@ -201,14 +261,18 @@ let rs=null
 let dbname=param?.dbname
 if(dbname==null || dbname=="")
 dbname="default"
-///api/Select?table_name=department&pageSize=100&param_pid_eq=0
+///api/Select?table_name=department&pageSize=100&param-pid-eq=0
     let where = "id >? "
+    if(param["where"])
+    {
+      where+=" and "+param["where"]+" "
+    }
     let p=["0"]
     for(let i in param)
     {
-      if(param[i]!=null && param[i]!="" && i.indexOf("param_")>=0 )
+      if(param[i]!=null && param[i]!="" && i.indexOf("param-")>=0 )
       {
-        let ps=i.split("_")
+        let ps=i.split("-")
         if(ps.length!=3)
         continue
         let act="="
@@ -981,7 +1045,56 @@ SetHeader('Access-Control-Allow-Methods', 'OPTIONS, GET, PUT, POST, DELETE');
     
   }
 
+  @All('/UploadFile')
+  async UploadFile(@Files() files, @Fields() fields) {
 
+    /*
+{
+    "files": [
+        {
+            "filename": "自定义渲染.png",
+            "data": "C:\\Users\\36101\\AppData\\Local\\Temp\\midway-upload-files\\upload_1674465300905.0.6497113851801981.0.png",
+            "fieldName": "",
+            "mimeType": "image/png",
+            "_ext": ".png"
+        }
+    ],
+    "fields": {
+        "aaa": "222",
+        "bbb": "333"
+    }
+}
+
+    */
+let admin=this.ctx.state.user;   
+let url=""
+for(let i in files)
+{
+  let row=files[i]
+  const localFile = row["data"];
+  let NewFile="images/"+common.GenUUID(row["filename"])
+  await this.ossService.put(NewFile, localFile);
+  url=NewFile
+if(admin)
+{
+await this.dbopService.name("attachment").insert({title:"文件",file_name:url,file_path:url,add_time:common.unixtime10(),admin_id:admin.id,department_id:admin.department_id})
+}
+}
+//SetHeader('Access-Control-Allow-Credentials', 'true')
+SetHeader('Access-Control-Allow-Origin', '*');
+SetHeader('Access-Control-Allow-Headers', 'x-requested-with, accept, origin, content-type');
+SetHeader('Access-Control-Allow-Methods', 'OPTIONS, GET, PUT, POST, DELETE');
+const config= this.app.getConfig()
+const ossconfig=config["oss"]["clients"]["default"]  
+url="http://"+ossconfig["bucket"]+"."+ossconfig["endpoint"]+"/"+url
+return {
+      "data":url,
+      success: true,
+     code:0,
+     msg:"上传成功"
+    }
+    
+  }
   @All('/sql2')
   async sql2(@Body() params: {}, @Query() query: {}) {
     let where = "id in (?) "
@@ -2624,6 +2737,292 @@ async SaveTablePower(@Body() params: {}, @Query() query: {}) {
 @All('/test')
 async test(@Body() params: {}, @Query() query: {}) {
   return { success: true, msg: '保存数据成功', code: 0,data:{"params":params} };
+}
+
+@All('/GetPageDataWithHistory')
+async GetPageDataWithHistory(@Body() params: {}, @Query() query: {}) {
+//  console.log("dBService是", this.dBService)
+let param:any= Object.assign(params, query)
+if(!param.id)
+return { success: true, msg: 'id不能为空', code: 1,data:null};
+const data=await this.dbopService.name("page").where("id=?",[param.id]).find()
+let his:any=await this.dbopService.name("page_history").where("page_id=?",[param.id]).order("id desc").limit(3).select()
+if(his!=null && his.length>0)
+{
+his=his.map((item, index, array) => {
+  item["upd_time"]=common.FormatDate(new Date(item["upd_time"]*1000))
+ // delete item["json"]
+  return item;
+}
+)
+}
+
+data["history"]=his
+return { success: true, msg: '获取数据成功', code: 0,data:data};
+}
+
+@All('/GeneratePage')
+async GeneratePage(@Body() params: {}, @Query() query: {}) {
+//  console.log("dBService是", this.dBService)
+let param:any= Object.assign(params, query)
+
+if(!param["table"] || param["table"]=="undefined")
+{
+  return { success: true, msg: 'table不能为空', code: 1};
+}
+
+const table2=param?.table
+const [dbname,table]=table2.split("|")
+
+let data:any={table:table}
+let columns=[]
+const select_columns=param?.select_columns.split(",")
+const search_columns=param?.search_columns.split(",")
+const edit_columns=param?.edit_columns.split(",")
+for(let i in select_columns)
+{
+  const column=select_columns[i]
+  let isSearch=false
+  if(search_columns.indexOf(column)>=0)
+  isSearch=true
+  let row= {
+    "searchType":"string",
+    "fixed":"false",
+    "dataIndex":column,
+    "title":column,
+    "width":"100",
+    "isSearch":isSearch
+}
+if(column.indexOf("date")>=0 || column.indexOf("time")>=0)
+{
+  row["render"]="{{let temp_time = new Date(name);\r\ntemp_time=temp_time.toLocaleString()\r\nreturn temp_time}}"
+}
+if(column.indexOf("status")>=0 )
+{
+  row["render"]=`{{(name,row,index)=>{
+
+    if(name==1)
+    {
+      return  React.createElement('span',{"class":"ant-tag ant-tag-success css-mxhywb","size":"small"},"启用")
+    }
+    else
+    {
+   return  React.createElement('span',{"class":"ant-tag ant-tag-danger css-mxhywb","size":"small"},"启用")
+    }
+  }
+}}`
+}
+
+if(column.indexOf("img")>=0 || column.indexOf("pic")>=0)
+{
+  row["render"]=`{{
+    (name,row,index)=>{
+  return  React.createElement('img',{"src":"`+name+`","height":"100"},"图")
+    }
+  }}`
+}
+ columns.push(row)
+}
+columns.push(
+{
+  "searchType":"string",
+  "fixed":"right",
+  "title":"编辑",
+  "dataIndex":"id",
+  "render":"{{(name,recored,index)=&gt;\r\n{\r\n      function click()\r\n          {\r\n       $SendEmit(\"EditPage\",recored)\r\n          }\r\n\r\n  return  React.createElement('Button',{\"class\":\"ant-btn ant-btn-primary\",\"onClick\":click,\"height\":80},\"编辑\")\r\n  }\r\n\r\n\r\n\r\n\r\n  \r\n}}",
+  "width":"80"
+})
+columns.push(
+{
+  "searchType":"string",
+  "fixed":"right",
+  "dataIndex":"id",
+  "title":"删除",
+  "render":"{{(name,recored,index)=&gt;\r\n{\r\n      function click()\r\n          {\r\n\r\n\r\n\r\n  let params = new URLSearchParams()\r\n  params.append(\"ids\", name)\r\n  params.append(\"table\", \""+table+"\")\r\nvar msg = \"您真的确定要删除吗？\\n\\n请确认！\";\r\n if (confirm(msg)==true){\r\nfetch(\"/api/Delete\", {\r\n    method: \"post\",\r\n    body: params.toString(),\r\n    headers: {\r\n      \"Content-Type\": \"application/x-www-form-urlencoded\",\r\n    },\r\n  })\r\n    .then((response) =&gt; response.json())\r\n    .then(\r\n      ({ code,msg }) =&gt; {\r\n\r\n    $SendEmit(\"PageList\",{\"act\":\"refresh\",\"a\":1})\r\n      },\r\n      () =&gt; {\r\n       \r\n      }\r\n    )\r\n }else{\r\n return false;\r\n7 }\r\n  \r\n\r\n\r\n\r\n\r\n          }\r\n\r\n  return  React.createElement('Button',{\"class\":\"ant-btn ant-btn-danger\",\"onClick\":click,\"height\":80},\"删除\")\r\n  }\r\n}}",
+  "width":"80"
+})
+
+let EditColumn={}
+for(let i in edit_columns)
+{
+  const column=edit_columns[i]
+let row={
+    "type":"string",
+    "title":column,
+    "x-decorator":"FormItem",
+    "x-component":"Input",
+    "x-validator":[
+
+    ],
+    "x-component-props":{
+
+    },
+    "x-decorator-props":{
+
+    },
+    "name":"row|"+column,
+    "x-designable-id":i,
+    "x-index":i
+}
+EditColumn["row|realname"]=row
+}
+
+data={
+  "form":{
+      "labelCol":6,
+      "wrapperCol":12,
+      "saveApi":"",
+      "initApi":""
+  },
+  "schema":{
+      "type":"object",
+      "properties":{
+          "sadecalo1jv":{
+              "type":"void",
+              "x-component":"FormGrid",
+              "x-validator":[
+
+              ],
+              "x-component-props":{
+
+              },
+              "x-designable-id":"sadecalo1jv",
+              "x-index":0,
+              "properties":{
+                  "zlml5xucxm5":{
+                      "type":"void",
+                      "x-component":"FormGrid.GridColumn",
+                      "x-validator":[
+
+                      ],
+                      "x-component-props":{
+                          "gridSpan":14
+                      },
+                      "x-designable-id":"zlml5xucxm5",
+                      "x-index":0,
+                      "properties":{
+                          "PageList":{
+                              "type":"string",
+                              "title":"",
+                              "x-decorator":"FormItem",
+                              "x-component":"CTable",
+                              "x-validator":[
+
+                              ],
+                              "x-component-props":{
+                                  "api":"/api/Select?dbname="+dbname+"?table="+table,
+                                  "delApi":"/api/Delete?dbname="+dbname+"?table="+table,
+                                  "columns":columns,
+                                  "MulButton":"{{\n        ()=&gt;\n        {\n          function click()\n          {\n            alert(selectedRowKeys)\n          }\n          return  React.createElement('Button',{\"class\":\"ant-btn ant-btn-primary\",\"onClick\":click},\"批量操作\")\n          }\n        }}",
+                                  "size":"small"
+                              },
+                              "x-decorator-props":{
+
+                              },
+                              "x-designable-id":"dxjjhp6wv5c",
+                              "x-index":0,
+                              "name":"PageList",
+                              "x-reactions":{
+                                  "dependencies":[
+                                      {
+                                          "property":"value",
+                                          "type":"any"
+                                      }
+                                  ],
+                                  "fulfill":{
+                                      "state":{
+                                          "componentProps":"{{{...$self.componentProps,$AddListen:$AddListen,$form:$form,$name:$self.getState().path}}}"
+                                      }
+                                  }
+                              }
+                          }
+                      }
+                  },
+                  "2qn8axkh7cv":{
+                      "type":"void",
+                      "x-component":"FormGrid.GridColumn",
+                      "x-validator":[
+
+                      ],
+                      "x-component-props":{
+                          "gridSpan":14
+                      },
+                      "x-designable-id":"2qn8axkh7cv",
+                      "x-index":1,
+                      "x-reactions":{
+                          "dependencies":[
+                              {
+                                  "property":"value",
+                                  "type":"any"
+                              }
+                          ],
+                          "fulfill":{
+                              "state":{
+                                  "componentProps":"{{ {...$self.componentProps,$AddListen:$AddListen,$form:$form,$name:$self.getState().path}}}"
+                              }
+                          }
+                      },
+                      "properties":{
+                          "EditPage":{
+                              "type":"void",
+                              "x-component":"Dialog",
+                              "x-component-props":{
+                                  "title":"编辑",
+                                  "ButtonID":"EditPage",
+                                  "dialogSaveApi":"/api/SaveEdmin?table="+table,
+                                  "dialogInitApi":"/api/Find?table_name=admin",
+                                  "dialogPrefix":"row|",
+                                  "confirm":"{{\n\n(row)=&gt;{\n\n$SendEmit(\"PageList\",{\"act\":\"refresh\",\"a\":1})\nreturn true\n}}}"
+                              },
+                              "name":"EditPage",
+                              "x-designable-id":"60s71ate9mn",
+                              "x-index":0,
+                              "x-reactions":{
+                                  "dependencies":[
+                                      {
+                                          "property":"value",
+                                          "type":"any"
+                                      }
+                                  ],
+                                  "fulfill":{
+                                      "state":{
+                                          "componentProps":"{{{...$self.componentProps,$AddListen:$AddListen,$form:$form,$name:$self.getState().path}}}"
+                                      }
+                                  }
+                              },
+                              "properties":{
+                                ...EditColumn
+                              }
+                          }
+                      }
+                  }
+              }
+          }
+      },
+      "x-designable-id":"dl872vx4362"+table
+  }
+}
+return { success: true, msg: '获取数据成功', code: 0,data:data};
+}
+
+
+@All('/SavePageWithoutLog')
+async SavePageWithoutLog(@Body() params: {}, @Query() query: {}) {
+//  console.log("dBService是", this.dBService)
+
+let param:any= Object.assign(params, query)
+if(!param["table"] || param["table"]=="undefined")
+{
+  return { success: true, msg: 'table不能为空', code: 1};
+}
+if(!param["json"] || param["json"]=="undefined")
+{
+  return { success: true, msg: 'json不能为空', code: 1};
+}
+const  admin=this.ctx.state.user;
+let data={"name":param["table"]+"列表","admin_id":admin.id,"json":param["json"]}
+await this.dbopService.name('page').insert(data)
+return { success: true, msg: '保存页面json成功', code: 0,data:data};
 }
 
 }
