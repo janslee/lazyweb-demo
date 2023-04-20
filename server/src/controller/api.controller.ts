@@ -310,7 +310,7 @@ dbname="default"
     const filters=param?.filters
     for(let i in filters)
     {
-      if(filters[i]=="")
+      if(!filters[i])
       continue
       where+=` and ${i} in (?) `
       p.push(filters[i])
