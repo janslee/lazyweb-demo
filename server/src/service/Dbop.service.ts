@@ -241,6 +241,7 @@ for (let key in parmas)
   
 
   let rs:any=await this.dBService.query(sql,p,this.pool)
+ // console.log("更新结果",rs)
  let num:number=0
   if(rs!=null && rs?.affectedRows!=null)
   num=rs?.affectedRows

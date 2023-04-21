@@ -387,7 +387,8 @@ dbname="default"
   if(param?.table!=null)
   {
   rs = await this.dbopService.db(dbname).table(table).fields(fields).pagesize(pageSize).page(page).order(order).where(where, p).select()
- total=await this.dbopService.db(dbname).table(table).where(where, p).count("*")
+
+  total=await this.dbopService.db(dbname).table(table).where(where, p).count("*")
 }
 let data=[]
 if(rs!=null && table=="admin")
@@ -672,6 +673,9 @@ return { success: true, msg: '加载数据成功', code: 0, "data":admin};
     let dbname=param?.dbname
 if(dbname==null || dbname=="")
 dbname="default"
+
+delete param["dbname"]
+
     let where = "id =? "
     let id=param["id"]
 
@@ -685,7 +689,11 @@ let rs=null
 if(id!=null && id>0)
 {
 if(table!=null && table!="")
-     rs = await this.dbopService.db(dbname).table(table).where(where, [id]).update(params)
+{
+  rs = await this.dbopService.db(dbname).table(table).where(where, [id]).update(params)
+    //console.log("哎呀",dbname,table,where,id,rs)
+}
+ 
      if(table_name!=null && table_name!="")
      rs = await this.dbopService.db(dbname).name(table_name).where(where, [id]).update(params) 
     } 
@@ -2829,7 +2837,7 @@ columns.push(
   "fixed":"right",
   "title":"编辑",
   "dataIndex":"id",
-  "render":"{{(name,recored,index)=&gt;\r\n{\r\n      function click()\r\n          {\r\n       $SendEmit(\"EditPage\",recored)\r\n          }\r\n\r\n  return  React.createElement('Button',{\"class\":\"ant-btn ant-btn-primary\",\"onClick\":click,\"height\":80},\"编辑\")\r\n  }\r\n\r\n\r\n\r\n\r\n  \r\n}}",
+  "render":"{{(name,recored,index)=>\r\n{\r\n      function click()\r\n          {\r\n       $SendEmit(\"EditPage\",recored)\r\n          }\r\n\r\n  return  React.createElement('Button',{\"class\":\"ant-btn ant-btn-primary\",\"onClick\":click,\"height\":80},\"编辑\")\r\n  }\r\n\r\n\r\n\r\n\r\n  \r\n}}",
   "width":"80"
 })
 columns.push(
@@ -2838,7 +2846,7 @@ columns.push(
   "fixed":"right",
   "dataIndex":"id",
   "title":"删除",
-  "render":"{{(name,recored,index)=&gt;\r\n{\r\n      function click()\r\n          {\r\n\r\n\r\n\r\n  let params = new URLSearchParams()\r\n  params.append(\"ids\", name)\r\n  params.append(\"table\", \""+table+"\")\r\nvar msg = \"您真的确定要删除吗？\\n\\n请确认！\";\r\n if (confirm(msg)==true){\r\nfetch(\"/api/Delete\", {\r\n    method: \"post\",\r\n    body: params.toString(),\r\n    headers: {\r\n      \"Content-Type\": \"application/x-www-form-urlencoded\",\r\n    },\r\n  })\r\n    .then((response) =&gt; response.json())\r\n    .then(\r\n      ({ code,msg }) =&gt; {\r\n\r\n    $SendEmit(\"PageList\",{\"act\":\"refresh\",\"a\":1})\r\n      },\r\n      () =&gt; {\r\n       \r\n      }\r\n    )\r\n }else{\r\n return false;\r\n7 }\r\n  \r\n\r\n\r\n\r\n\r\n          }\r\n\r\n  return  React.createElement('Button',{\"class\":\"ant-btn ant-btn-danger\",\"onClick\":click,\"height\":80},\"删除\")\r\n  }\r\n}}",
+  "render":"{{(name,recored,index)=>\r\n{\r\n      function click()\r\n          {\r\n\r\n\r\n\r\n  let params = new URLSearchParams()\r\n  params.append(\"ids\", recored.id)\r\n  params.append(\"table\", \""+table+"\")\r\nvar msg = \"您真的确定要删除吗？\\n\\n请确认！\";\r\n if (confirm(msg)==true){\r\nfetch(\"/api/Delete\", {\r\n    method: \"post\",\r\n    body: params.toString(),\r\n    headers: {\r\n      \"Content-Type\": \"application/x-www-form-urlencoded\",\r\n    },\r\n  })\r\n    .then((response) => response.json())\r\n    .then(\r\n      ({ code,msg }) => {\r\n\r\n    $SendEmit(\"PageList\",{\"act\":\"refresh\",\"a\":1})\r\n      },\r\n      () => {\r\n       \r\n      }\r\n    )\r\n }else{\r\n return false;\r\n7 }\r\n  \r\n\r\n\r\n\r\n\r\n          }\r\n\r\n  return  React.createElement('Button',{\"class\":\"ant-btn ant-btn-danger\",\"onClick\":click,\"height\":80},\"删除\")\r\n  }\r\n}}",
   "width":"80"
 })
 
@@ -2864,7 +2872,7 @@ let row={
     "x-designable-id":i,
     "x-index":i
 }
-EditColumn["row|realname"]=row
+EditColumn["row|"+column]=row
 }
 
 data={
@@ -2910,10 +2918,10 @@ data={
 
                               ],
                               "x-component-props":{
-                                  "api":"/api/Select?dbname="+dbname+"?table="+table,
-                                  "delApi":"/api/Delete?dbname="+dbname+"?table="+table,
+                                  "api":"/api/Select?dbname="+dbname+"&table="+table,
+                                  "delApi":"/api/Delete?dbname="+dbname+"&table="+table,
                                   "columns":columns,
-                                  "MulButton":"{{\n        ()=&gt;\n        {\n          function click()\n          {\n            alert(selectedRowKeys)\n          }\n          return  React.createElement('Button',{\"class\":\"ant-btn ant-btn-primary\",\"onClick\":click},\"批量操作\")\n          }\n        }}",
+                                  "MulButton":"{{\n        ()=>\n        {\n          function click()\n          {\n            alert(selectedRowKeys)\n          }\n          return  React.createElement('Button',{\"class\":\"ant-btn ant-btn-primary\",\"onClick\":click},\"批量操作\")\n          }\n        }}",
                                   "size":"small"
                               },
                               "x-decorator-props":{
@@ -2969,10 +2977,10 @@ data={
                               "x-component-props":{
                                   "title":"编辑",
                                   "ButtonID":"EditPage",
-                                  "dialogSaveApi":"/api/SaveEdmin?table="+table,
-                                  "dialogInitApi":"/api/Find?table_name=admin",
+                                  "dialogSaveApi":"/api/SaveEdit?dbname="+dbname+"&table="+table,
+                                  "dialogInitApi":"/api/Find?dbname="+dbname+"&table="+table,
                                   "dialogPrefix":"row|",
-                                  "confirm":"{{\n\n(row)=&gt;{\n\n$SendEmit(\"PageList\",{\"act\":\"refresh\",\"a\":1})\nreturn true\n}}}"
+                                  "confirm":"{{\n\n(row)=>{\n\n$SendEmit(\"PageList\",{\"act\":\"refresh\",\"a\":1})\nreturn true\n}}}"
                               },
                               "name":"EditPage",
                               "x-designable-id":"60s71ate9mn",

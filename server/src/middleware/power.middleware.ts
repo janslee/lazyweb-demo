@@ -29,8 +29,8 @@ export class PowerMiddleware implements IMiddleware<Context, NextFunction> {
     if(act=="Delete")
     act="delete"
    //判断下有没有校验信息
-   const body=ctx.request.body!=null?ctx.request.body:{}
-   const query=ctx.request.query!=null?ctx.request.query:{}
+   const body:any=ctx.request.body!=null?ctx.request.body:{}
+   const query:any=ctx.request.query!=null?ctx.request.query:{}
    let param:any= Object.assign(body, query)
    
      
@@ -47,10 +47,24 @@ export class PowerMiddleware implements IMiddleware<Context, NextFunction> {
       table="default|"+this.dBService.Prefixs["default"]+table
     }
   }
+
+  if(param["table"]!=null)
+  {
+    table=param["table"]
+    if(param["dbname"])
+    {
+      table=param["dbname"]+"|"+table
+    }
+    else
+    {
+      table="default|"+table
+    }
+  }
 //获取字段信息
 let columns=[]
 if( act!="delete")
 {
+ 
   const [table_schema,table_name]=table.split("|")
 
   const config= this.app.getConfig()
@@ -65,7 +79,8 @@ if( act!="delete")
     }
   }
   let sql = `SELECT * FROM information_schema.COLUMNS WHERE  table_schema =? and table_name=? `
-let COLUMNS:any = await this.dBService.query(sql, [dbname,table_name],table_schema)
+  //console.log("哈哈",dbname,table_name,table_schema)
+  let COLUMNS:any = await this.dBService.query(sql, [dbname,table_name],table_schema)
 
 columns=COLUMNS.map((item, index, array) => {
   return item["COLUMN_NAME"];

@@ -437,8 +437,10 @@ const buttons=()=>{
   {
     return null
   }
+
   if(typeof(MulButton)=="string")
   {
+    return
   MulButton=MulButton.replace("{{","")
   MulButton=MulButton.replace("}}","")
 
@@ -451,9 +453,9 @@ const buttons=()=>{
   }
 }
 
-//if(typeof(MulButton)=="function" && MulButton!=null)
- //return MulButton(selectedRowKeys)
- //else
+if(typeof(MulButton)=="function" && MulButton!=null)
+ return MulButton(selectedRowKeys)
+else
  return null
 }
   return (
