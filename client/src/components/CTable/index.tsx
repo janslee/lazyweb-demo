@@ -314,7 +314,9 @@ pagination,
         return  <><InputNumber style={{width:"150px"}} onChange={(value)=>{searchParam["min:"+column?.dataIndex]=value}} addonBefore={"最小"+column?.title}  />-
         <InputNumber style={{width:"75px"}}  onChange={(value)=>{searchParam["max:"+column?.dataIndex]=value}}   /></>;
       case "date":
-        return <><span>{column?.title}:</span><RangePicker  
+        return <><span>{column?.title}:</span>
+        
+        <RangePicker  
       format={dateFormat}
       locale={locale}
         onChange={([a,b])=>{searchParam[column?.dataIndex]=[moment(moment(a).format('YYYY-MM-DD'),'YYYY-MM-DD').valueOf().toString().substring(0,10),moment(moment(b).format('YYYY-MM-DD'),'YYYY-MM-DD').valueOf().toString().substring(0,10)]}}  allowEmpty={[true,true]} /></>;

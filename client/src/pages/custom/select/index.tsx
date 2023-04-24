@@ -1,28 +1,31 @@
-import { Select } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
+import type { UploadProps } from 'antd';
+import { Button, message, Upload } from 'antd';
+import React from 'react';
 
-const handleChange = (value: string) => {
-  console.log(`selected ${value}`);
+const props: UploadProps = {
+  name: 'file',
+  action: '/api/UploadFile',
+  headers: {
+    authorization: 'authorization-text',
+  },
+  onChange(info) {
+    console.log("测试", info)
+    if (info.file.status !== 'uploading') {
+      console.log(info.file, info.fileList);
+    }
+    if (info.file.status === 'done') {
+      message.success(`${info.file.name} file uploaded successfully`);
+    } else if (info.file.status === 'error') {
+      message.error(`${info.file.name} file upload failed.`);
+    }
+  },
 };
 
-export default () => {
-  return (
-  <>
-    <Select
-      defaultValue="lucy"
-      style={{ width: 120 }}
-      onChange={handleChange}
-      fieldNames={{ label: 'name', value: 'id',"options":"options" }}
-      options={[
-        {
-          value: 'jack',
-          name: 'Jack',
-        },
-      
-      ]}
-    />
- 
-   
-   
-  </>
-  )
-}
+const page: React.FC = () => (
+  <Upload {...props}>
+    <Button icon={<UploadOutlined />}>Click to Upload</Button>
+  </Upload>
+);
+
+export default page;

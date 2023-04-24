@@ -6,7 +6,7 @@ import {common} from "../../../lib/common"
 import {
   Form,
   FormItem,
-  DatePicker,
+  
   Checkbox,
   Cascader,
   Editable,
@@ -23,7 +23,7 @@ import {
   TimePicker,
   Transfer,
   TreeSelect,
-  Upload,
+
   FormGrid,
   FormLayout,
   FormTab,
@@ -52,6 +52,8 @@ import  CList  from   '../../../components/CList'
 import  Custom  from   '../../../components/Custom'
 import  Text  from   '../../../components/Text'
 import  RichText  from   '../../../components/RichText'
+import  DatePicker  from   '../../../components/DatePicker'
+import  Upload  from   '../../../components/Upload'
 import { Card, Slider, Rate,Modal,message } from 'antd'
 
 
@@ -126,7 +128,8 @@ const SchemaField = createSchemaField({
     Editor,
     CList,
     Custom,
-    RichText
+    RichText,
+
   },
 
 scope: {

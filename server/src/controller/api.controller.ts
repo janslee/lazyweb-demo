@@ -1097,6 +1097,7 @@ const ossconfig=config["oss"]["clients"]["default"]
 url="http://"+ossconfig["bucket"]+"."+ossconfig["endpoint"]+"/"+url
 return {
       "data":url,
+      "url":url,
       success: true,
      code:0,
      msg:"上传成功"
@@ -2781,7 +2782,7 @@ if(!param["table"] || param["table"]=="undefined")
 
 const table2=param?.table
 const [dbname,table]=table2.split("|")
-
+const TableListName=table+"_list_"+common.RandomString(4)
 let data:any={table:table}
 let columns=[]
 const select_columns=param?.select_columns.split(",")
@@ -2803,7 +2804,7 @@ for(let i in select_columns)
 }
 if(column.indexOf("date")>=0 || column.indexOf("time")>=0)
 {
-  row["render"]="{{let temp_time = new Date(name);\r\ntemp_time=temp_time.toLocaleString()\r\nreturn temp_time}}"
+  row["render"]="{{(name,row,index)=>{let temp_time = new Date(name);\r\ntemp_time=temp_time.toLocaleString()\r\nreturn temp_time} }}"
 }
 if(column.indexOf("status")>=0 )
 {
@@ -2825,7 +2826,7 @@ if(column.indexOf("img")>=0 || column.indexOf("pic")>=0)
 {
   row["render"]=`{{
     (name,row,index)=>{
-  return  React.createElement('img',{"src":"`+name+`","height":"100"},"图")
+  return  React.createElement('img',{"src":name,"height":"100"},"图")
     }
   }}`
 }
@@ -2846,7 +2847,7 @@ columns.push(
   "fixed":"right",
   "dataIndex":"id",
   "title":"删除",
-  "render":"{{(name,recored,index)=>\r\n{\r\n      function click()\r\n          {\r\n\r\n\r\n\r\n  let params = new URLSearchParams()\r\n  params.append(\"ids\", recored.id)\r\n  params.append(\"table\", \""+table+"\")\r\nvar msg = \"您真的确定要删除吗？\\n\\n请确认！\";\r\n if (confirm(msg)==true){\r\nfetch(\"/api/Delete\", {\r\n    method: \"post\",\r\n    body: params.toString(),\r\n    headers: {\r\n      \"Content-Type\": \"application/x-www-form-urlencoded\",\r\n    },\r\n  })\r\n    .then((response) => response.json())\r\n    .then(\r\n      ({ code,msg }) => {\r\n\r\n    $SendEmit(\"PageList\",{\"act\":\"refresh\",\"a\":1})\r\n      },\r\n      () => {\r\n       \r\n      }\r\n    )\r\n }else{\r\n return false;\r\n7 }\r\n  \r\n\r\n\r\n\r\n\r\n          }\r\n\r\n  return  React.createElement('Button',{\"class\":\"ant-btn ant-btn-danger\",\"onClick\":click,\"height\":80},\"删除\")\r\n  }\r\n}}",
+  "render":"{{(name,recored,index)=>\r\n{\r\n      function click()\r\n          {\r\n\r\n\r\n\r\n  let params = new URLSearchParams()\r\n  params.append(\"ids\", recored.id)\r\n  params.append(\"table\", \""+table+"\")\r\nvar msg = \"您真的确定要删除吗？\\n\\n请确认！\";\r\n if (confirm(msg)==true){\r\nfetch(\"/api/Delete\", {\r\n    method: \"post\",\r\n    body: params.toString(),\r\n    headers: {\r\n      \"Content-Type\": \"application/x-www-form-urlencoded\",\r\n    },\r\n  })\r\n    .then((response) => response.json())\r\n    .then(\r\n      ({ code,msg }) => {\r\n\r\n    $SendEmit(\""+TableListName+"\",{\"act\":\"refresh\",\"a\":1})\r\n      },\r\n      () => {\r\n       \r\n      }\r\n    )\r\n }else{\r\n return false;\r\n7 }\r\n  \r\n\r\n\r\n\r\n\r\n          }\r\n\r\n  return  React.createElement('Button',{\"class\":\"ant-btn ant-btn-danger\",\"onClick\":click,\"height\":80},\"删除\")\r\n  }\r\n}}",
   "width":"80"
 })
 
@@ -2872,7 +2873,43 @@ let row={
     "x-designable-id":i,
     "x-index":i
 }
+
+if(column.indexOf("status")>=0 || column.indexOf("status")>=0)
+{
+  row["type"]="boolean"
+  row["x-component"]="Switch"
+}
+if(column.indexOf("time")>=0 || column.indexOf("date")>=0)
+{
+  row["type"]="string"
+  row["x-component"]="DatePicker"
+}
+
+if(column.indexOf("pic")>=0 || column.indexOf("image")>=0 || column.indexOf("img")>=0)
+{
+  row["type"]="Array<object>"
+  row["x-component"]="Upload"
+
+  row["x-component-props"]= {
+      "textContent": "上传",
+      "maxCount": 2,
+      "action": "/api/UploadFile",
+      "withCredentials": true,
+      "accept": "",
+      "showUploadList": true,
+      "listType": "picture"
+    }
+ 
+
+}
+
+if(column.indexOf("content")>=0 || column.indexOf("html")>=0 )
+{
+  row["type"]="string"
+  row["x-component"]="Upload"
+}
 EditColumn["row|"+column]=row
+
 }
 
 data={
@@ -2909,7 +2946,7 @@ data={
                       "x-designable-id":"zlml5xucxm5",
                       "x-index":0,
                       "properties":{
-                          "PageList":{
+                          [TableListName]:{
                               "type":"string",
                               "title":"",
                               "x-decorator":"FormItem",
@@ -2929,7 +2966,7 @@ data={
                               },
                               "x-designable-id":"dxjjhp6wv5c",
                               "x-index":0,
-                              "name":"PageList",
+                              "name":TableListName,
                               "x-reactions":{
                                   "dependencies":[
                                       {
@@ -2980,7 +3017,7 @@ data={
                                   "dialogSaveApi":"/api/SaveEdit?dbname="+dbname+"&table="+table,
                                   "dialogInitApi":"/api/Find?dbname="+dbname+"&table="+table,
                                   "dialogPrefix":"row|",
-                                  "confirm":"{{\n\n(row)=>{\n\n$SendEmit(\"PageList\",{\"act\":\"refresh\",\"a\":1})\nreturn true\n}}}"
+                                  "confirm":"{{\n\n(row)=>{\n\n$SendEmit(\""+TableListName+"\",{\"act\":\"refresh\",\"a\":1})\nreturn true\n}}}"
                               },
                               "name":"EditPage",
                               "x-designable-id":"60s71ate9mn",
