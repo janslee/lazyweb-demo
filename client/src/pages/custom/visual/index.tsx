@@ -54,7 +54,9 @@ import  Text  from   '../../../components/Text'
 import  RichText  from   '../../../components/RichText'
 import  DatePicker  from   '../../../components/DatePicker'
 import  Upload  from   '../../../components/Upload'
-import { Card, Slider, Rate,Modal,message } from 'antd'
+import  Divider  from   '../../../components/Divider'
+
+import { Card, Slider, Rate,Modal,message,Steps } from 'antd'
 
 
 import { eventBus } from '../../../lib/Provider'
@@ -129,7 +131,8 @@ const SchemaField = createSchemaField({
     CList,
     Custom,
     RichText,
-
+    Divider,
+    Steps
   },
 
 scope: {

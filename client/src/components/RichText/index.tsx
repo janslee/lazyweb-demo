@@ -269,7 +269,7 @@ return (
           onCreated={setEditor}
           onChange={editor => setValue(editor.getHtml())}
           mode="default"
-          style={{ height: '500px', overflowY: 'hidden' }}
+          style={{ height:props.height? props.height:'500px', overflowY: 'hidden' }}
 
          
       />
