@@ -13,6 +13,8 @@ import { JwtPassportMiddleware } from '../middleware/jwt.middleware';
 import { common } from '../lib/common';
 import { Files, Fields } from '@midwayjs/decorator';
 import { OSSService } from '@midwayjs/oss';
+import * as xlsx from 'xlsx';
+
 
 @Controller('/api')
 export class APIController {
@@ -321,12 +323,12 @@ dbname="default"
   {
     let search=param?.search
 
-    
+   
     for(let i in search)
     {
-      if(search[i]=="")
+      if(search[i]==null)
       continue
-     
+   
       if(i.indexOf("min:")>=0)
       {
       where+=` and ${i.replace("min:","")} >=? `
@@ -355,7 +357,7 @@ dbname="default"
 
 
     }
-   // console.log("搜索条件是:",where)
+  //console.log("搜索条件是:",where)
   }
 
     let pageSize=12
@@ -2793,7 +2795,10 @@ for(let i in select_columns)
   const column=select_columns[i]
   let isSearch=false
   if(search_columns.indexOf(column)>=0)
-  isSearch=true
+  {
+    isSearch=true
+  }
+
   let row= {
     "searchType":"string",
     "fixed":"false",
@@ -2802,9 +2807,13 @@ for(let i in select_columns)
     "width":"100",
     "isSearch":isSearch
 }
+
+
+
 if(column.indexOf("date")>=0 || column.indexOf("time")>=0)
 {
-  row["render"]="{{(name,row,index)=>{let temp_time = new Date(name);\r\ntemp_time=temp_time.toLocaleString()\r\nreturn temp_time} }}"
+  row["render"]="{{(name,row,index)=>{let temp_time = new Date(name*1000);\r\ntemp_time=temp_time.toLocaleString()\r\nreturn temp_time} }}"
+  row["searchType"]="date"
 }
 if(column.indexOf("status")>=0 )
 {
@@ -2820,6 +2829,9 @@ if(column.indexOf("status")>=0 )
     }
   }
 }}`
+
+row["searchType"]="select"
+row["options"]= "{{[{\"label\":\"正常\",\"value\":1},{\"label\":\"停用\",\"value\":0}]}}"
 }
 
 if(column.indexOf("img")>=0 || column.indexOf("pic")>=0)
@@ -2959,7 +2971,9 @@ data={
                                   "delApi":"/api/Delete?dbname="+dbname+"&table="+table,
                                   "columns":columns,
                                   "MulButton":"{{\n        ()=>\n        {\n          function click()\n          {\n            alert(selectedRowKeys)\n          }\n          return  React.createElement('Button',{\"class\":\"ant-btn ant-btn-primary\",\"onClick\":click},\"批量操作\")\n          }\n        }}",
-                                  "size":"small"
+                                  "size":"small",
+                                  "ShowAddButton": true,
+                                  "AddEvent": "{{(event)=>{\n          let row={\n        \n          }\n          \n    \n    $SendEmit('EditPage', row);\n}}}"
                               },
                               "x-decorator-props":{
 
@@ -3070,4 +3084,33 @@ await this.dbopService.name('page').insert(data)
 return { success: true, msg: '保存页面json成功', code: 0,data:data};
 }
 
+
+@Get('/download')
+async downloadExcel(@Query() name: string) {
+  // 生成 Excel 文件内容
+  const data = [['姓名', '年龄'], ['张三', 20], ['李四', 25], ['王五', 30]];
+
+/***
+ * 
+ * 
+    // 将数据转换成二维数组
+    const data = [['ID', '姓名', '分数']];
+    for (const user of users) {
+      data.push([user.id, user.name, user.score]);
+    }
+
+ */
+
+  const sheet = xlsx.utils.aoa_to_sheet(data);
+  const workbook = xlsx.utils.book_new();
+  xlsx.utils.book_append_sheet(workbook, sheet, 'Sheet1');
+  const excelBuffer = xlsx.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+
+  // 设置响应头，使客户端可以下载该文件
+  this.ctx.response.set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  this.ctx.response.set('Content-Disposition', `attachment; filename=${name}.xlsx`);
+
+  // 将 Excel 文件内容写入响应中
+  this.ctx.response.body = excelBuffer;
+}
 }

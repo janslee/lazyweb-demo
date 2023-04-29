@@ -6,7 +6,8 @@ import type { FilterValue, SorterResult } from 'antd/es/table/interface';
 import qs from 'qs';
 import { observable ,autorun} from '@formily/reactive'
 import { request } from 'umi';
-import { SearchOutlined } from '@ant-design/icons';
+import { SearchOutlined,FileExcelOutlined } from '@ant-design/icons';
+
 import locale from 'antd/lib/date-picker/locale/zh_CN';
 import 'moment/locale/zh-cn'
 import moment from 'moment';
@@ -354,6 +355,44 @@ const search=(e:any)=>{
 fetchData()
 }
 
+
+const GenExcel=(e:any)=>{
+  setLoading(true);
+  let data=getRandomuserParams(tableParams)
+//console.log("请求参数data",tableParams)
+data["search"]=searchParam
+
+  request<{
+    msg: string;
+    code: number;
+    success: boolean;
+    data: any;
+  }>("/api/SelectExcel", {
+    method: 'POST',
+data:data
+  })
+ 
+      .then((rs:any) => {
+     //   console.log("数据",data)
+   // message.success(rs?.msg)
+
+    if(common.isArray(rs?.data))
+     setData(rs.data);
+       setLoading(false);
+
+        setTableParams({
+          ...tableParams,
+          pagination: {
+            ...tableParams.pagination,
+            total: parseInt(rs?.total),
+            // 200 is mock data, you should read it from server
+            // total: data.totalCount,
+          },
+        });
+    // console.log("xxx",tableParams.pagination)
+      });
+  }
+
 const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 const start = () => {
 fetchData()
@@ -470,10 +509,11 @@ else
   
       <Tooltip title="搜索">
         <Button type="primary" onClick={search} shape="circle" icon={<SearchOutlined  />} />
+      
       </Tooltip>
-      
-
-      
+      <Tooltip title="导出Excel">
+      <Button type="primary" style={{marginLeft:"0px"}} onClick={GenExcel} shape="circle" icon={<FileExcelOutlined  />} />
+      </Tooltip>
     </Space>
 
   </Space>
