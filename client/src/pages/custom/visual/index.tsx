@@ -59,7 +59,9 @@ import  Avatar  from   '../../../components/Avatar'
 import  Badge  from   '../../../components/Badge'
 import  Carousel  from   '../../../components/Carousel'
 import  Descriptions  from   '../../../components/Descriptions'
-
+import  List  from   '../../../components/List'
+import  Timeline  from   '../../../components/Timeline'
+import  Statistic  from   '../../../components/Statistic'
 import { Card, Slider, Rate,Modal,message,Steps } from 'antd'
 
 
@@ -140,7 +142,10 @@ const SchemaField = createSchemaField({
     Avatar,
     Badge,
     Carousel,
-    Descriptions
+    Descriptions,
+    List,
+    Timeline,
+    Statistic
   },
 
 scope: {

@@ -14,7 +14,7 @@ import { common } from '../lib/common';
 import { Files, Fields } from '@midwayjs/decorator';
 import { OSSService } from '@midwayjs/oss';
 import * as xlsx from 'xlsx';
-
+import * as  dayjs from 'dayjs';
 
 @Controller('/api')
 export class APIController {
@@ -3085,7 +3085,7 @@ return { success: true, msg: '保存页面json成功', code: 0,data:data};
 }
 
 
-@Get('/download')
+@All('/download')
 async downloadExcel(@Query() name: string) {
   // 生成 Excel 文件内容
   const data = [['姓名', '年龄'], ['张三', 20], ['李四', 25], ['王五', 30]];
@@ -3113,4 +3113,206 @@ async downloadExcel(@Query() name: string) {
   // 将 Excel 文件内容写入响应中
   this.ctx.response.body = excelBuffer;
 }
+
+
+@All('/SelectExcel' )
+  async SelectExcel(@Body() params: {}, @Query() query: {}) {
+    let param:any = Object.assign(params, query)
+   
+    let table="page"
+    if(param?.table_name!=null)
+    table=param?.table_name
+    if(param?.table!=null)
+    table=param?.table
+let dbname=param?.dbname
+if(dbname==null || dbname=="")
+dbname="default"
+
+const columns=param.columns
+///api/Select?table_name=department&pageSize=100&param-pid-eq=0
+    let where = "id >? "
+    if(param["where"])
+    {
+      where+=" and "+param["where"]+" "
+    }
+    let p=["0"]
+    for(let i in param)
+    {
+      if(param[i]!=null && param[i]!="" && i.indexOf("param-")>=0 )
+      {
+        let ps=i.split("-")
+        if(ps.length!=3)
+        continue
+        let act="="
+        switch (ps[2]) {
+          case "gt":
+            act = ">";
+            break; /* 可选的 */
+          case "gte":
+            act = ">=";
+            break;
+          case "lt":
+            act = "<";
+            break;
+          case "lte":
+            act = "<=";
+            break;
+          case "eq":
+            act = "=";
+            break;
+          case "neq":
+            act = "<>";
+            break;
+          default: /* 可选的 */
+            act = "="
+        }
+        where+=` and ${ps[1]} ${act}? `
+        p.push(param[i])
+      }
+    }
+   
+
+    //console.log("filters",param?.filters)
+  if(param?.filters!=null)
+  {
+    const filters=param?.filters
+    for(let i in filters)
+    {
+      if(!filters[i])
+      continue
+      where+=` and ${i} in (?) `
+      p.push(filters[i])
+    }
+  }
+
+  if(param?.search!=null)
+  {
+    let search=param?.search
+
+   
+    for(let i in search)
+    {
+      if(search[i]==null)
+      continue
+   
+      if(i.indexOf("min:")>=0)
+      {
+      where+=` and ${i.replace("min:","")} >=? `
+      p.push(search[i])
+    }
+    else if(i.indexOf("max:")>=0)
+    {
+      where+=` and ${i.replace("max:","")} <=? `
+      p.push(search[i])
+    }
+    else if((i.indexOf("date")>=0 || i.indexOf("time")>=0) && typeof(search[i])=="object")
+    {
+      where+=` and ${i}>=? and  ${i}<=? `
+      p.push(search[i][0])
+      p.push((parseInt(search[i][1])+86400)+"")
+    }
+    else if(i.indexOf("select:")>=0)
+    {
+      where+=` and ${i.replace("select:","")} =? `
+      p.push(search[i])
+    }
+    else{
+      where+=` and ${i} like ? `
+      p.push("%%"+search[i]+"%%")
+    }
+
+
+    }
+  //console.log("搜索条件是:",where)
+  }
+
+    let pageSize=1000
+    let page=1
+
+
+     let order ="id desc"
+     if(param?.field!=null && param?.field!="")
+     {
+      order =param?.field
+      if(param?.order!=null && param?.order!="")
+      order+=" "+param?.order
+      order=order.replace("end","")
+      
+     }
+    // console.log("where",where)
+    // console.log("p",p)
+    let fields=param?.fields!=null && param?.fields!=""?param.fields:"*"
+     let rs =null
+    
+     if(param?.table_name!=null)
+     {
+     rs = await this.dbopService.db(dbname).name(table).fields(fields).pagesize(pageSize).page(page).order(order).where(where, p).select()
+    
+  }
+
+  if(param?.table!=null)
+  {
+  rs = await this.dbopService.db(dbname).table(table).fields(fields).pagesize(pageSize).page(page).order(order).where(where, p).select()
+
+ 
+}
+let data=[]
+if(rs!=null && table=="admin")
+{
+  for(let i in rs)
+  {
+    let row=rs[i]
+     row["password"]=""
+    delete row["login_salt"]
+    data.push(row)
+  }
+ 
+}
+else
+data=rs
+  
+let ExcelDAta=[]
+let titles=[]
+    // 将数据转换成二维数组
+  //  const data = [['ID', '姓名', '分数']];
+    for (const row of data) {
+     
+      let NewRow=[]
+      for(let i in columns)
+      {
+        const field=columns[i].dataIndex
+        const title=columns[i].title
+        if(field=="id" && (title.indexOf("序号")<0 && title.indexOf("ID")<0 && title.indexOf("id")<0))
+        {
+          continue
+        }
+        if(titles.indexOf(title)<0)
+        {
+          titles.push(title)
+
+        }
+        let value=row[field]
+        if(field.indexOf("time")>=0 || field.indexOf("date")>=0)
+        {
+          value=dayjs(value).format("YYYY-MM-DD HH:mm:ss")
+        }
+        NewRow.push(value)
+      }
+      ExcelDAta.push(NewRow);
+    }
+    ExcelDAta=[titles,...ExcelDAta]
+const sheet = xlsx.utils.aoa_to_sheet(ExcelDAta);
+  const workbook = xlsx.utils.book_new();
+  xlsx.utils.book_append_sheet(workbook, sheet, 'Sheet1');
+  const excelBuffer = xlsx.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+let name="download"
+  // 设置响应头，使客户端可以下载该文件
+  this.ctx.response.set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  this.ctx.response.set('Content-Disposition', `attachment; filename=${name}.xlsx`);
+
+  // 将 Excel 文件内容写入响应中
+  this.ctx.response.body = excelBuffer;
+
+  }
+
 }

@@ -7,7 +7,7 @@ import qs from 'qs';
 import { observable ,autorun} from '@formily/reactive'
 import { request } from 'umi';
 import { SearchOutlined,FileExcelOutlined } from '@ant-design/icons';
-
+import { saveAs } from 'file-saver';
 import locale from 'antd/lib/date-picker/locale/zh_CN';
 import 'moment/locale/zh-cn'
 import moment from 'moment';
@@ -359,38 +359,30 @@ fetchData()
 const GenExcel=(e:any)=>{
   setLoading(true);
   let data=getRandomuserParams(tableParams)
+
+  if(props?.api!=null && props?.api!="")
+  {
+    let apiurl=new URL("http://127.0.0.1:7000"+props?.api)
+    let param=apiurl.searchParams
+    data=Object.assign(data,Object.fromEntries(param))
+  }
+  data["columns"]=columns
 //console.log("请求参数data",tableParams)
 data["search"]=searchParam
+//  /api/SelectExcel
+const url="/api/SelectExcel"
+request(url, { method: "Post",data:data, encoding: null,responseType: "blob" })
+.then((res: any) => {
+  const blob = new Blob([res], { type: "application/vnd.ms-excel" });
+   saveAs(blob, "下载数据.xlsx");
+   setLoading(false);
+})
+.catch((err: any) => {
+  console.log(err);
+  setLoading(false);
+});
 
-  request<{
-    msg: string;
-    code: number;
-    success: boolean;
-    data: any;
-  }>("/api/SelectExcel", {
-    method: 'POST',
-data:data
-  })
- 
-      .then((rs:any) => {
-     //   console.log("数据",data)
-   // message.success(rs?.msg)
-
-    if(common.isArray(rs?.data))
-     setData(rs.data);
-       setLoading(false);
-
-        setTableParams({
-          ...tableParams,
-          pagination: {
-            ...tableParams.pagination,
-            total: parseInt(rs?.total),
-            // 200 is mock data, you should read it from server
-            // total: data.totalCount,
-          },
-        });
-    // console.log("xxx",tableParams.pagination)
-      });
+  
   }
 
 const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
