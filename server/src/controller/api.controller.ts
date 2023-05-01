@@ -201,7 +201,7 @@ async SavePageDataWhoutlog(@Body() params: {}, @Query() query: {}) {
 
 if(param["json"] && param["id"]) 
 {
-await this.dbopService.name("page").where("id=?", [param["id"]]).update({json:param["json"],"upd_time":common.unixtime10()})
+await this.dbopService.name("page").where("id=?", [param["id"]]).update({json:param["json"],"name":param["name"],"upd_time":common.unixtime10()})
 
 }
 else

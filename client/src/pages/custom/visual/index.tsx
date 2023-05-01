@@ -55,6 +55,10 @@ import  RichText  from   '../../../components/RichText'
 import  DatePicker  from   '../../../components/DatePicker'
 import  Upload  from   '../../../components/Upload'
 import  Divider  from   '../../../components/Divider'
+import  Avatar  from   '../../../components/Avatar'
+import  Badge  from   '../../../components/Badge'
+import  Carousel  from   '../../../components/Carousel'
+import  Descriptions  from   '../../../components/Descriptions'
 
 import { Card, Slider, Rate,Modal,message,Steps } from 'antd'
 
@@ -132,7 +136,11 @@ const SchemaField = createSchemaField({
     Custom,
     RichText,
     Divider,
-    Steps
+    Steps,
+    Avatar,
+    Badge,
+    Carousel,
+    Descriptions
   },
 
 scope: {
