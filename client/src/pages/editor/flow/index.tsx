@@ -1,37 +1,71 @@
-import { Col, Row } from 'antd';
-import GGEditor, { Flow } from 'gg-editor';
+import React from 'react';
 
-import { PageContainer } from '@ant-design/pro-layout';
-import EditorMinimap from './components/EditorMinimap';
-import { FlowContextMenu } from './components/EditorContextMenu';
-import { FlowDetailPanel } from './components/EditorDetailPanel';
-import { FlowItemPanel } from './components/EditorItemPanel';
-import { FlowToolbar } from './components/EditorToolbar';
-import styles from './index.less';
+import { Flowchart } from '@ant-design/flowchart';
+import { message } from 'antd';
 
-GGEditor.setTrackable(false);
+/**
+ * 样式文件引入，实际项目中不要这么用，可以考虑在对应的less\sass文件中引入
+ * eg:
+ *  style.less
+ *  @import (inline) '../../node_modules/antd/dist/antd.css';
+ *  @import (inline) '../../node_modules/@ant-design/flowchart/dist/index.css';
+ *  demo.tsx
+ *  import './style.less'
+ */
+const createLink = (src:any) => {
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.className = 'dynamic-link';
+  link.href = src;
+  document.getElementsByTagName('head')[0].appendChild(link);
+};
+createLink('https://unpkg.com/antd@4.24.3/dist/antd.css');
+createLink('https://unpkg.com/@ant-design/flowchart@1.2.1/dist/index.css');
 
-export default () => (
-  <PageContainer content="千言万语不如一张图，流程图是表示算法思路的好方法">
-    <GGEditor className={styles.editor}>
-      <Row className={styles.editorHd}>
-        <Col span={24}>
-          <FlowToolbar />
-        </Col>
-      </Row>
-      <Row className={styles.editorBd}>
-        <Col span={4} className={styles.editorSidebar}>
-          <FlowItemPanel />
-        </Col>
-        <Col span={16} className={styles.editorContent}>
-          <Flow className={styles.flow} />
-        </Col>
-        <Col span={4} className={styles.editorSidebar}>
-          <FlowDetailPanel />
-          <EditorMinimap />
-        </Col>
-      </Row>
-      <FlowContextMenu />
-    </GGEditor>
-  </PageContainer>
-);
+const DemoFlowchart = () => {
+  return (
+    <div style={{ height: 600 }}>
+      <Flowchart
+        onSave={(d) => {
+          message.success( JSON.stringify(d))
+          console.log(d, JSON.stringify(d));
+        }}
+        toolbarPanelProps={{
+          position: {
+            top: 0,
+            left: 0,
+            right: 0,
+          },
+        }}
+        scaleToolbarPanelProps={{
+          layout: 'horizontal',
+          position: {
+            right: 0,
+            top: -40,
+          },
+          style: {
+            width: 150,
+            height: 39,
+            left: 'auto',
+            background: 'transparent',
+          },
+        }}
+        canvasProps={{
+          position: {
+            top: 40,
+            left: 0,
+            right: 0,
+            bottom: 0,
+          },
+        }}
+        nodePanelProps={{
+          position: { width: 160, top: 40, bottom: 0, left: 0 },
+        }}
+        detailPanelProps={{
+          position: { width: 200, top: 40, bottom: 0, right: 0 },
+        }}
+      />
+    </div>
+  );
+};
+export default DemoFlowchart;

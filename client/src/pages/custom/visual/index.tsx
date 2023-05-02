@@ -62,6 +62,11 @@ import  Descriptions  from   '../../../components/Descriptions'
 import  List  from   '../../../components/List'
 import  Timeline  from   '../../../components/Timeline'
 import  Statistic  from   '../../../components/Statistic'
+import  Progress  from   '../../../components/Progress'
+import  ChartLine  from   '../../../components/ChartLine'
+import  ChartColumn  from   '../../../components/ChartColumn'
+import  ChartPie  from   '../../../components/ChartPie'
+
 import { Card, Slider, Rate,Modal,message,Steps } from 'antd'
 
 
@@ -145,7 +150,11 @@ const SchemaField = createSchemaField({
     Descriptions,
     List,
     Timeline,
-    Statistic
+    Statistic,
+    Progress,
+    ChartLine,
+    ChartColumn,
+    ChartPie
   },
 
 scope: {
@@ -311,7 +320,7 @@ function ShowSubmit(formProps:any)
 }
 //console.log("fschema2",fschema)
   return (
-    <div style ={{border:'0px dashed #ccc', margin:'0px', padding:'10px', boxShadow:'0 0 10px #ccc'}}>
+    <div style ={{border:'0px dashed #ccc',backgroundColor:"#fff", margin:'0px', padding:'10px', boxShadow:'0 0 10px #ccc'}}>
     <Form {...fprops} form={form}
   onAutoSubmit={submit}
     >
