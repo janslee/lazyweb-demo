@@ -2,7 +2,8 @@ import React from 'react';
 
 import { Flowchart } from '@ant-design/flowchart';
 import { message } from 'antd';
-
+import  '../../../../node_modules/antd/dist/antd.css';
+import  '../../../../node_modules/@ant-design/flowchart/dist/index.css';
 /**
  * 样式文件引入，实际项目中不要这么用，可以考虑在对应的less\sass文件中引入
  * eg:

@@ -1,11 +1,11 @@
 
 
 import React, { useEffect, useState } from 'react'
-import { Pie  as PieAntd} from '@ant-design/charts';
+import { Rose  as RoseAntd} from '@ant-design/charts';
 
 
-export const ChartPie= (props: any) => {
-  const [data, setData] = useState([
+ const ChartRose= (props: any) => {
+  const [data, setData] = useState( [
     {
       type: '分类一',
       value: 27,
@@ -64,41 +64,19 @@ let api=props.api;
   };
   
   const config = {
-    appendPadding: 10,
+ 
     data,
-    angleField: props.angleField?props.angleField:'value',
-    colorField: props.colorField?props.colorField:'type',
-    radius: 1,
+    xField: props.xField?props.xField:'type',
+    yField: props.yField?props.yField:'value',
+    seriesField: props.seriesField?props.seriesField:'type',
+    radius: props.radius!=null?props.radius:0.9,
     innerRadius: props.innerRadius!=null?props.innerRadius:0.6,
     height: props.height?props.height:400,
-    label: {
-      type: 'inner',
-      offset: '-50%',
-      content: props.labelContent ?props.labelContent:'{value}',
-      style: {
-        textAlign: 'center',
-        fontSize: 14,
-      },
+    legend: {
+      position: 'bottom',
     },
-    interactions: [
-      {
-        type: 'element-selected',
-      },
-      {
-        type: 'element-active',
-      },
-    ],
-    statistic: {
-      title: null,
-      content: {
-        style: {
-          whiteSpace: 'pre-wrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-        },
-        content: props.title?props.title:'饼图演示',
-      },
-    },
+   
+   
   };
 
 
@@ -107,9 +85,9 @@ let api=props.api;
 return (
 
 
-  <PieAntd {...config} />
+  <RoseAntd {...config} />
  )
  }
 
 
-export default ChartPie;
+export default ChartRose;

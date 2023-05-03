@@ -66,6 +66,11 @@ import  Progress  from   '../../../components/Progress'
 import  ChartLine  from   '../../../components/ChartLine'
 import  ChartColumn  from   '../../../components/ChartColumn'
 import  ChartPie  from   '../../../components/ChartPie'
+import  ChartLiquid  from   '../../../components/ChartLiquid'
+import  ChartBar  from   '../../../components/ChartBar'
+import  ChartRose  from   '../../../components/ChartRose'
+import  ChartRadar  from   '../../../components/ChartRadar'
+import  ChartWaterfall  from   '../../../components/ChartWaterfall'
 
 import { Card, Slider, Rate,Modal,message,Steps } from 'antd'
 
@@ -154,7 +159,12 @@ const SchemaField = createSchemaField({
     Progress,
     ChartLine,
     ChartColumn,
-    ChartPie
+    ChartPie,
+    ChartLiquid,
+    ChartBar,
+    ChartRose,
+    ChartRadar,
+    ChartWaterfall
   },
 
 scope: {
