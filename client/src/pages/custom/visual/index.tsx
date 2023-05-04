@@ -71,6 +71,12 @@ import  ChartBar  from   '../../../components/ChartBar'
 import  ChartRose  from   '../../../components/ChartRose'
 import  ChartRadar  from   '../../../components/ChartRadar'
 import  ChartWaterfall  from   '../../../components/ChartWaterfall'
+import  ChartAreaMap  from   '../../../components/ChartAreaMap'
+import  ChartWordCloud  from   '../../../components/ChartWordCloud'
+import  TinyArea  from   '../../../components/TinyArea'
+import  TinyColumn from   '../../../components/TinyColumn'
+import  RingProgress  from   '../../../components/RingProgress'
+
 
 import { Card, Slider, Rate,Modal,message,Steps } from 'antd'
 
@@ -164,7 +170,12 @@ const SchemaField = createSchemaField({
     ChartBar,
     ChartRose,
     ChartRadar,
-    ChartWaterfall
+    ChartWaterfall,
+    ChartAreaMap,
+    ChartWordCloud,
+    TinyArea,
+    TinyColumn,
+    RingProgress
   },
 
 scope: {

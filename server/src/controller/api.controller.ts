@@ -198,8 +198,9 @@ return { success: true, msg: '保存数据成功', code: 0, "data": {} };
 @All('/SavePageDataWhoutlog')
 async SavePageDataWhoutlog(@Body() params: {}, @Query() query: {}) {
   let param = Object.assign(params, query)
-
-if(param["json"] && param["id"]) 
+if(!param["json"])
+param["json"]="{}"
+if( param["id"]) 
 {
 await this.dbopService.name("page").where("id=?", [param["id"]]).update({json:param["json"],"name":param["name"],"upd_time":common.unixtime10()})
 
@@ -3076,10 +3077,18 @@ if(!param["table"] || param["table"]=="undefined")
 }
 if(!param["json"] || param["json"]=="undefined")
 {
-  return { success: true, msg: 'json不能为空', code: 1};
+  param["json"]={}
 }
 const  admin=this.ctx.state.user;
 let data={"name":param["table"]+"列表","admin_id":admin.id,"json":param["json"]}
+if(param["id"])
+{
+  const id=param["id"]
+  delete data["id"]
+  await this.dbopService.name('page').where("id=?",[id]).update(data)
+}
+
+else
 await this.dbopService.name('page').insert(data)
 return { success: true, msg: '保存页面json成功', code: 0,data:data};
 }
