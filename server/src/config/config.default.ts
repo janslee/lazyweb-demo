@@ -2,7 +2,7 @@ import { MidwayConfig } from '@midwayjs/core';
 import { uploadWhiteList } from '@midwayjs/upload';
 export default {
   // use for cookie sign key, should change to your own and keep security
-  keys: '1668171435832_3211',
+  keys: '1668171435832_lazyweb',
   koa: {
     port: 7000,
   },

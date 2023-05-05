@@ -44,6 +44,9 @@ export class ContainerLifeCycle {
         dir: join(__dirname, './public'),
       })
     );
+    //const config= this.app.getConfig()
+ 
+    this.app.addConfigObject({"cqa":"测试2"})
     // add filter
     // this.app.useFilter([NotFoundFilter, DefaultErrorFilter]);
   }

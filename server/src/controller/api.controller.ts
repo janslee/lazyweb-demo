@@ -52,8 +52,8 @@ export class APIController {
     let c = this.app.getApplicationContext();
     c.setAttr("aaa", "bb")
    const config= this.app.getConfig()
-   const ossconfig=config["oss"]["clients"]["default"]
-    return ossconfig
+   //const ossconfig=config["oss"]["clients"]["default"]
+    return config
   }
 
 
@@ -1720,6 +1720,7 @@ admin["role_departments"] = role_departments
 const token:string=await this.jwt.sign(admin)
 admin["token"]=token
 this.ctx.cookies.set('token', token, { encrypt: false });
+admin.DefaultUrl="/custom/visual/107/556"
 return admin;
 }
 
@@ -1766,176 +1767,7 @@ let menu=[
         },
       ],
     },
-    {
-      path: '/dashboard',
-      name: 'dashboard',
-      icon: 'DashboardOutlined',
-      routes: [
-        {
-          path: '/dashboard',
-          redirect: '/dashboard/analysis',
-        },
-
-        
-        {
-          name: 'analysis',
-          icon: 'SmileOutlined',
-          path: '/dashboard/analysis/1',
-          component: './dashboard/analysis',
-        },
-        {
-          name: 'analysis2',
-          icon: 'SmileOutlined',
-          path: '/dashboard/analysis/2',
-          component: './dashboard/analysis',
-        },
-        {
-          name: 'monitor',
-          icon: 'SmileOutlined',
-          path: '/dashboard/monitor',
-          component: './dashboard/monitor',
-        },
-        {
-          name: 'workplace',
-          icon: 'SmileOutlined',
-          path: '/dashboard/workplace',
-          component: './dashboard/workplace',
-        },
-      ],
-    },
-    {
-      path: '/form',
-      icon: 'FormOutlined',
-      name: 'form',
-      routes: [
-        {
-          path: '/form',
-          redirect: '/form/basic-form',
-        },
-        {
-          name: 'basic-form',
-          icon: 'SmileOutlined',
-          path: '/form/basic-form',
-          component: './form/basic-form',
-        },
-        {
-          name: 'step-form',
-          icon: 'SmileOutlined',
-          path: '/form/step-form',
-          component: './form/step-form',
-        },
-        {
-          name: 'advanced-form',
-          icon: 'SmileOutlined',
-          path: '/form/advanced-form',
-          component: './form/advanced-form',
-        },
-      ],
-    },
-    {
-      path: '/list',
-      icon: 'TableOutlined',
-      name: 'list',
-      routes: [
-        {
-          path: '/list/search',
-          name: 'search-list',
-          component: './list/search',
-          routes: [
-            {
-              path: '/list/search',
-              redirect: '/list/search/articles',
-            },
-            {
-              name: 'articles',
-              icon: 'SmileOutlined',
-              path: '/list/search/articles',
-              component: './list/search/articles',
-            },
-            {
-              name: 'projects',
-              icon: 'SmileOutlined',
-              path: '/list/search/projects',
-              component: './list/search/projects',
-            },
-            {
-              name: 'applications',
-              icon: 'SmileOutlined',
-              path: '/list/search/applications',
-              component: './list/search/applications',
-            },
-          ],
-        },
-        {
-          path: '/list',
-          redirect: '/list/table-list',
-        },
-        {
-          name: 'table-list',
-          icon: 'SmileOutlined',
-          path: '/list/table-list',
-          component: './list/table-list',
-        },
-        {
-          name: 'basic-list',
-          icon: 'SmileOutlined',
-          path: '/list/basic-list',
-          component: './list/basic-list',
-        },
-        {
-          name: 'card-list',
-          icon: 'SmileOutlined',
-          path: '/list/card-list',
-          component: './list/card-list',
-        },
-      ],
-    },
-    {
-      path: '/profile',
-      name: 'profile',
-      icon: 'ProfileOutlined',
-      routes: [
-        {
-          path: '/profile',
-          redirect: '/profile/basic',
-        },
-        {
-          name: 'basic',
-          icon: 'SmileOutlined',
-          path: '/profile/basic',
-          component: './profile/basic',
-        },
-        {
-          name: 'advanced',
-          icon: 'SmileOutlined',
-          path: '/profile/advanced',
-          component: './profile/advanced',
-        },
-      ],
-    },
-    {
-      name: 'result',
-      icon: 'CheckCircleOutlined',
-      path: '/result',
-      routes: [
-        {
-          path: '/result',
-          redirect: '/result/success',
-        },
-        {
-          name: 'success',
-          icon: 'SmileOutlined',
-          path: '/result/success',
-          component: './result/success',
-        },
-        {
-          name: 'fail',
-          icon: 'SmileOutlined',
-          path: '/result/fail',
-          component: './result/fail',
-        },
-      ],
-    },
+    
     {
       name: 'exception',
       icon: 'WarningOutlined',
@@ -2091,7 +1923,7 @@ let menu=[
     },
 
     {
-      path: '/',
+      path: '/abc',
       redirect: '/dashboard/analysis/2',  //默认页无效 客户端有效
     },
     {
@@ -2207,7 +2039,7 @@ for(let i in MenuDb)
   }
 
 }
- menu=menu.concat(WebMenu)
+ menu=WebMenu.concat(menu)
  return menu;
 }
 

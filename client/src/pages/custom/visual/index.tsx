@@ -76,6 +76,7 @@ import  ChartWordCloud  from   '../../../components/ChartWordCloud'
 import  TinyArea  from   '../../../components/TinyArea'
 import  TinyColumn from   '../../../components/TinyColumn'
 import  RingProgress  from   '../../../components/RingProgress'
+import  Gauge from '../../../components/Gauge'
 
 
 import { Card, Slider, Rate,Modal,message,Steps } from 'antd'
@@ -175,7 +176,8 @@ const SchemaField = createSchemaField({
     ChartWordCloud,
     TinyArea,
     TinyColumn,
-    RingProgress
+    RingProgress,
+    Gauge
   },
 
 scope: {

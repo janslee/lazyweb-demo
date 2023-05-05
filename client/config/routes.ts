@@ -369,7 +369,7 @@
   },
   {
     path: '/',
-    redirect: '/dashboard/analysis/1', //默认页
+    redirect: '/custom/visual/107/0', //默认页
   },
   {
     component: '404',
