@@ -22,6 +22,7 @@ export const ChartAreaMap= (props: any) => {
     { name: '松江区', count: 5000 ,unit_price:77},
     { name: '青浦区', count: 2000 ,unit_price:176},
     { name: '奉贤区', count: 1000 ,unit_price:99},
+    { name: '崇明区', count: 800 ,unit_price:67},
   ]);
 
   useEffect(() => {
@@ -161,7 +162,7 @@ return (
 
 
 
-  <div style={{"height":props.height?props.height:"500px"}}><AreaMapAntd {...config} /></div>
+  <div style={{width:props.width?props.width:"500px","height":props.height?props.height:"500px"}}><AreaMapAntd {...config} /></div>
  )
  }
 

@@ -2,7 +2,7 @@ import { request } from 'umi';
 import type { CurrentUser, GeographicItemType } from './data';
 
 export async function queryCurrent(): Promise<{ data: CurrentUser }> {
-  return request('/api/accountSettingCurrentUser');
+  return request('/api/currentUser');
 }
 
 export async function queryProvince(): Promise<{ data: GeographicItemType[] }> {

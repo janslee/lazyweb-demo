@@ -22,6 +22,9 @@ export const Gauge= (props: any) => {
   const graphRef = useRef(null);
   const config = {
     percent: percent,
+    height: props.height?props.height:200,
+    width: props.width?props.width:null,
+    autoFit: props.autoFit?props.autoFit:false,
     innerRadius: 0.75,
     type:  props.type!=null?props.type:'meter',
     // 自定义 meter 总步数 以及 step 占比
@@ -76,21 +79,23 @@ export const Gauge= (props: any) => {
       graphRef.current = plot;
     },
   };
+  /*
   useEffect(() => {
     if (graphRef.current) {
       let data = 0;
       const interval = setInterval(() => {
+        
         if (data >= 1.5) {
           clearInterval(interval);
         }
 
         data += 0.005;
-        if( graphRef?.current)
-        graphRef?.current.changeData(data > 1 ? data - 1 : data);
+  if(graphRef &&  graphRef?.current)
+   graphRef?.current.changeData(data > 1 ? data - 1 : data);
       }, 10);
     }
   }, [graphRef]);
-
+*/
   return <GaugeAntd {...config} />;
 
 

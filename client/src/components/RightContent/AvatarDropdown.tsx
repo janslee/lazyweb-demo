@@ -72,7 +72,7 @@ const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu }) => {
 
   const menuHeaderDropdown = (
     <Menu className={styles.menu} selectedKeys={[]} onClick={onMenuClick}>
-      {menu && (
+      {menu && false &&  (
         <Menu.Item key="center">
           <UserOutlined />
           个人中心

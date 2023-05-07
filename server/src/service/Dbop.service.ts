@@ -174,7 +174,8 @@ for (let key in parmas)
     fields.push(key)
     p.push(parmas[key].toString())
   }
-  let fieldsstr=fields.join(",")
+  let fieldsstr=fields.join("`,`")
+  fieldsstr="`"+fieldsstr+"`"
   let v=",?".repeat(fields.length);
   v=v.substring(1)
   var sql = `insert into ${this.Table} (`+fieldsstr+`) value (`+v+`)`;
@@ -219,11 +220,11 @@ for (let key in parmas)
     p.push(parmas[key].toString())
     if (fieldsstr=="")
     {
-        fieldsstr=key+"=?"
+        fieldsstr="`"+key+"`=?"
     }
     else
     {
-        fieldsstr+=","+key+"=?" 
+        fieldsstr+=",`"+key+"`=?" 
     }
   }
  
@@ -241,7 +242,7 @@ for (let key in parmas)
   
 
   let rs:any=await this.dBService.query(sql,p,this.pool)
- // console.log("更新结果",rs)
+// console.log("更新结果",rs)
  let num:number=0
   if(rs!=null && rs?.affectedRows!=null)
   num=rs?.affectedRows

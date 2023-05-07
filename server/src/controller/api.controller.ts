@@ -677,6 +677,9 @@ return { success: true, msg: '加载数据成功', code: 0, "data":admin};
 if(dbname==null || dbname=="")
 dbname="default"
 
+
+
+
 delete param["dbname"]
 
     let where = "id =? "
@@ -1720,7 +1723,9 @@ admin["role_departments"] = role_departments
 const token:string=await this.jwt.sign(admin)
 admin["token"]=token
 this.ctx.cookies.set('token', token, { encrypt: false });
-admin.DefaultUrl="/custom/visual/107/556"
+let config= this.app.getConfig()
+let AdminConfig= config.admin
+admin.DefaultUrl=AdminConfig.DefaultUrl?AdminConfig.DefaultUrl:"/custom/visual/107/0"
 return admin;
 }
 
@@ -1768,35 +1773,7 @@ let menu=[
       ],
     },
     
-    {
-      name: 'exception',
-      icon: 'WarningOutlined',
-      path: '/exception',
-      routes: [
-        {
-          path: '/exception',
-          redirect: '/exception/403',
-        },
-        {
-          name: '403',
-          icon: 'SmileOutlined',
-          path: '/exception/403',
-          component: './exception/403',
-        },
-        {
-          name: '404',
-          icon: 'SmileOutlined',
-          path: '/exception/404',
-          component: './exception/404',
-        },
-        {
-          name: '500',
-          icon: 'SmileOutlined',
-          path: '/exception/500',
-          component: './exception/500',
-        },
-      ],
-    },
+   
     {
       name: 'account',
       icon: 'UserOutlined',
@@ -1806,12 +1783,7 @@ let menu=[
           path: '/account',
           redirect: '/account/center',
         },
-        {
-          name: 'center',
-          icon: 'SmileOutlined',
-          path: '/account/center',
-          component: './account/center',
-        },
+ 
         {
           name: 'settings',
           icon: 'SmileOutlined',
@@ -1835,92 +1807,12 @@ let menu=[
           path: '/editor/flow',
           component: './editor/flow',
         },
-        {
-          name: 'mind',
-          icon: 'SmileOutlined',
-          path: '/editor/mind',
-          component: './editor/mind',
-        },
-        {
-          name: 'koni',
-          icon: 'SmileOutlined',
-          path: '/editor/koni',
-          component: './editor/koni',
-        },
+       
       ],
     },
   
 
-    {
-      name: 'custom',
-      icon: 'UserAddOutlined',
-      path: '/custom',
-     component: './custom',
-  
-      routes: [
-        {
-          name: 'basic',
-          icon: 'SmileOutlined',
-          path: '/custom/basic',
-          component: './custom/basic',
-        },
-        {
-          name: 'layout',
-          icon: 'SmileOutlined',
-          path: '/custom/layout',
-          component: './custom/layout',
-        },
-        {
-          name: 'table',
-          icon: 'SmileOutlined',
-          path: '/custom/table',
-          component: './custom/table',
-        },
-        {
-          name: 'login',
-          icon: 'SmileOutlined',
-          path: '/custom/login',
-          component: './custom/login',
-        },
-        {
-          name: 'reg',
-          icon: 'SmileOutlined',
-          path: '/custom/reg',
-          component: './custom/reg',
-        },
-        {
-          name: 'change',
-          icon: 'SmileOutlined',
-          path: '/custom/change',
-          component: './custom/change',
-        },
-        {
-          name: 'visual',
-          icon: 'SmileOutlined',
-          path: '/custom/visual/1',
-          component: './custom/visual',
-        },
-        {
-          name: 'basictable',
-          icon: 'SmileOutlined',
-          path: '/custom/basictable',
-          component: './custom/basictable',
-        },
-        {
-          name: 'select',
-          icon: 'SmileOutlined',
-          path: '/custom/select',
-          component: './custom/select',
-        },
-        {
-          name: 'editor',
-          icon: 'SmileOutlined',
-          path: '/custom/editor',
-          component: './custom/editor',
-        },
-      ]
-  
-    },
+    
 
     {
       path: '/abc',
@@ -2056,6 +1948,8 @@ for(let i in MenuDb)
 
   admin["token"]= await this.jwt.sign(admin)
  }
+ let admin2 = await this.dbopService.name("admin").where("id=?", [admin.id]).find()
+ 
 
     let data =
     {
@@ -2063,7 +1957,7 @@ for(let i in MenuDb)
       data: {
         name: admin.username,
         avatar: admin.avatar,
-        userid: '00000001',
+        userid: admin.id,
         email: 'antdesign@alipay.com',
         signature: '海纳百川，有容乃大',
         title: '交互专家',
@@ -2094,8 +1988,8 @@ for(let i in MenuDb)
             label: '海纳百川',
           },
         ],
-        notifyCount: 12,
-        unreadCount: 11,
+        notifyCount: 10,
+        unreadCount: 0,
         country: 'China',
         access: true,
         geographic: {
@@ -2108,114 +2002,117 @@ for(let i in MenuDb)
             key: '330100',
           },
         },
-        address: '西湖区工专路 77 号',
+       address: '西湖区工专路 77 号',
         phone: '0752-268888888',
       },
     }
-    data["data"]=Object.assign(data["data"],admin)
+    data["data"]=Object.assign(data["data"],admin,admin2)
+    
     return JSON.stringify(data);
   }
 
 
   getNotices() {
+    let list=[
+      {
+        id: '000000001',
+        avatar: 'https://gw.alipayobjects.com/zos/rmsportal/ThXAXghbEsBCCSDihZxY.png',
+        title: '你收到了 14 份新周报',
+        datetime: '2017-08-09',
+        type: 'notification',
+      },
+      {
+        id: '000000002',
+        avatar: 'https://gw.alipayobjects.com/zos/rmsportal/OKJXDXrmkNshAMvwtvhu.png',
+        title: '你推荐的 曲妮妮 已通过第三轮面试',
+        datetime: '2017-08-08',
+        type: 'notification',
+      },
+      {
+        id: '000000003',
+        avatar: 'https://gw.alipayobjects.com/zos/rmsportal/kISTdvpyTAhtGxpovNWd.png',
+        title: '这种模板可以区分多种通知类型',
+        datetime: '2017-08-07',
+        read: true,
+        type: 'notification',
+      },
+      {
+        id: '000000004',
+        avatar: 'https://gw.alipayobjects.com/zos/rmsportal/GvqBnKhFgObvnSGkDsje.png',
+        title: '左侧图标用于区分不同的类型',
+        datetime: '2017-08-07',
+        type: 'notification',
+      },
+      {
+        id: '000000005',
+        avatar: 'https://gw.alipayobjects.com/zos/rmsportal/ThXAXghbEsBCCSDihZxY.png',
+        title: '内容不要超过两行字，超出时自动截断',
+        datetime: '2017-08-07',
+        type: 'notification',
+      },
+      {
+        id: '000000006',
+        avatar: 'https://gw.alipayobjects.com/zos/rmsportal/fcHMVNCjPOsbUGdEduuv.jpeg',
+        title: '曲丽丽 评论了你',
+        description: '描述信息描述信息描述信息',
+        datetime: '2017-08-07',
+        type: 'message',
+        clickClose: true,
+      },
+      {
+        id: '000000007',
+        avatar: 'https://gw.alipayobjects.com/zos/rmsportal/fcHMVNCjPOsbUGdEduuv.jpeg',
+        title: '朱偏右 回复了你',
+        description: '这种模板用于提醒谁与你发生了互动，左侧放『谁』的头像',
+        datetime: '2017-08-07',
+        type: 'message',
+        clickClose: true,
+      },
+      {
+        id: '000000008',
+        avatar: 'https://gw.alipayobjects.com/zos/rmsportal/fcHMVNCjPOsbUGdEduuv.jpeg',
+        title: '标题',
+        description: '这种模板用于提醒谁与你发生了互动，左侧放『谁』的头像',
+        datetime: '2017-08-07',
+        type: 'message',
+        clickClose: true,
+      },
+      {
+        id: '000000009',
+        title: '任务名称',
+        description: '任务需要在 2017-01-12 20:00 前启动',
+        extra: '未开始',
+        status: 'todo',
+        type: 'event',
+      },
+      {
+        id: '000000010',
+        title: '第三方紧急代码变更',
+        description: '冠霖提交于 2017-01-06，需在 2017-01-07 前完成代码变更任务',
+        extra: '马上到期',
+        status: 'urgent',
+        type: 'event',
+      },
+      {
+        id: '000000011',
+        title: '信息安全考试',
+        description: '指派竹尔于 2017-01-09 前完成更新并发布',
+        extra: '已耗时 8 天',
+        status: 'doing',
+        type: 'event',
+      },
+      {
+        id: '000000012',
+        title: 'ABCD 版本发布',
+        description: '冠霖提交于 2017-01-06，需在 2017-01-07 前完成代码变更任务',
+        extra: '进行中',
+        status: 'processing',
+        type: 'event',
+      },
+    ]
+    list=[]
     let data = {
-      data: [
-        {
-          id: '000000001',
-          avatar: 'https://gw.alipayobjects.com/zos/rmsportal/ThXAXghbEsBCCSDihZxY.png',
-          title: '你收到了 14 份新周报',
-          datetime: '2017-08-09',
-          type: 'notification',
-        },
-        {
-          id: '000000002',
-          avatar: 'https://gw.alipayobjects.com/zos/rmsportal/OKJXDXrmkNshAMvwtvhu.png',
-          title: '你推荐的 曲妮妮 已通过第三轮面试',
-          datetime: '2017-08-08',
-          type: 'notification',
-        },
-        {
-          id: '000000003',
-          avatar: 'https://gw.alipayobjects.com/zos/rmsportal/kISTdvpyTAhtGxpovNWd.png',
-          title: '这种模板可以区分多种通知类型',
-          datetime: '2017-08-07',
-          read: true,
-          type: 'notification',
-        },
-        {
-          id: '000000004',
-          avatar: 'https://gw.alipayobjects.com/zos/rmsportal/GvqBnKhFgObvnSGkDsje.png',
-          title: '左侧图标用于区分不同的类型',
-          datetime: '2017-08-07',
-          type: 'notification',
-        },
-        {
-          id: '000000005',
-          avatar: 'https://gw.alipayobjects.com/zos/rmsportal/ThXAXghbEsBCCSDihZxY.png',
-          title: '内容不要超过两行字，超出时自动截断',
-          datetime: '2017-08-07',
-          type: 'notification',
-        },
-        {
-          id: '000000006',
-          avatar: 'https://gw.alipayobjects.com/zos/rmsportal/fcHMVNCjPOsbUGdEduuv.jpeg',
-          title: '曲丽丽 评论了你',
-          description: '描述信息描述信息描述信息',
-          datetime: '2017-08-07',
-          type: 'message',
-          clickClose: true,
-        },
-        {
-          id: '000000007',
-          avatar: 'https://gw.alipayobjects.com/zos/rmsportal/fcHMVNCjPOsbUGdEduuv.jpeg',
-          title: '朱偏右 回复了你',
-          description: '这种模板用于提醒谁与你发生了互动，左侧放『谁』的头像',
-          datetime: '2017-08-07',
-          type: 'message',
-          clickClose: true,
-        },
-        {
-          id: '000000008',
-          avatar: 'https://gw.alipayobjects.com/zos/rmsportal/fcHMVNCjPOsbUGdEduuv.jpeg',
-          title: '标题',
-          description: '这种模板用于提醒谁与你发生了互动，左侧放『谁』的头像',
-          datetime: '2017-08-07',
-          type: 'message',
-          clickClose: true,
-        },
-        {
-          id: '000000009',
-          title: '任务名称',
-          description: '任务需要在 2017-01-12 20:00 前启动',
-          extra: '未开始',
-          status: 'todo',
-          type: 'event',
-        },
-        {
-          id: '000000010',
-          title: '第三方紧急代码变更',
-          description: '冠霖提交于 2017-01-06，需在 2017-01-07 前完成代码变更任务',
-          extra: '马上到期',
-          status: 'urgent',
-          type: 'event',
-        },
-        {
-          id: '000000011',
-          title: '信息安全考试',
-          description: '指派竹尔于 2017-01-09 前完成更新并发布',
-          extra: '已耗时 8 天',
-          status: 'doing',
-          type: 'event',
-        },
-        {
-          id: '000000012',
-          title: 'ABCD 版本发布',
-          description: '冠霖提交于 2017-01-06，需在 2017-01-07 前完成代码变更任务',
-          extra: '进行中',
-          status: 'processing',
-          type: 'event',
-        },
-      ],
+      data: list,
     };
     return data;
   }
@@ -2957,7 +2854,7 @@ async downloadExcel(@Query() name: string) {
 
 
 @All('/SelectExcel' )
-  async SelectExcel(@Body() params: {}, @Query() query: {}) {
+async SelectExcel(@Body() params: {}, @Query() query: {}) {
     let param:any = Object.assign(params, query)
    
     let table="page"
@@ -3122,6 +3019,8 @@ let titles=[]
       for(let i in columns)
       {
         const field=columns[i].dataIndex
+        if(!field)
+        continue
         const title=columns[i].title
         if(field=="id" && (title.indexOf("序号")<0 && title.indexOf("ID")<0 && title.indexOf("id")<0))
         {
@@ -3155,5 +3054,83 @@ let name="download"
   this.ctx.response.body = excelBuffer;
 
   }
+  //保存config
+  @All('/SaveConfig')
+async SaveConfig(@Body() params: {}, @Query() query: {}) {
+//  console.log("dBService是", this.dBService)
+const table_name="config"
+let param:any= Object.assign(params, query)
+
+let upd_time=common.unixtime10()
+let data={"type":param["type"],"name":param["name"],"value":param["value"],"describe":param["describe"],"upd_time":upd_time}
+if(param["id"])
+{
+  const id=param["id"]
+
+  await this.dbopService.name(table_name).where("id=?",[id]).update(data)
+}
+
+else
+await this.dbopService.name(table_name).insert(data)
+const config = this.app.getConfig()
+const ossconfig = config["oss"]["clients"]["default"]
+const type = param["type"]
+if (type == "oss") {
+  ossconfig[param["name"]] = param["value"]
+  this.app.addConfigObject({ "oss": {"clients":{"default":ossconfig}}})
+}
+else
+{
+let CurrentConfig=config[type]?config[type]:{}
+CurrentConfig[param["name"]]=param["value"]
+this.app.addConfigObject({ [type]: CurrentConfig})
+}
+  
+return { success: true, msg: '保存config成功', code: 0,data:data};
+}
+
+
+@All('/geographic/province' )
+async province(@Body() params: {}, @Query() query: {}) {
+  //  let param:any = Object.assign(params, query)
+return {"data":[{"name":"北京市","id":"110000"},{"name":"天津市","id":"120000"},{"name":"河北省","id":"130000"},{"name":"山西省","id":"140000"},{"name":"内蒙古自治区","id":"150000"},{"name":"辽宁省","id":"210000"},{"name":"吉林省","id":"220000"},{"name":"黑龙江省","id":"230000"},{"name":"上海市","id":"310000"},{"name":"江苏省","id":"320000"},{"name":"浙江省","id":"330000"},{"name":"安徽省","id":"340000"},{"name":"福建省","id":"350000"},{"name":"江西省","id":"360000"},{"name":"山东省","id":"370000"},{"name":"河南省","id":"410000"},{"name":"湖北省","id":"420000"},{"name":"湖南省","id":"430000"},{"name":"广东省","id":"440000"},{"name":"广西壮族自治区","id":"450000"},{"name":"海南省","id":"460000"},{"name":"重庆市","id":"500000"},{"name":"四川省","id":"510000"},{"name":"贵州省","id":"520000"},{"name":"云南省","id":"530000"},{"name":"西藏自治区","id":"540000"},{"name":"陕西省","id":"610000"},{"name":"甘肃省","id":"620000"},{"name":"青海省","id":"630000"},{"name":"宁夏回族自治区","id":"640000"},{"name":"新疆维吾尔自治区","id":"650000"},{"name":"台湾省","id":"710000"},{"name":"香港特别行政区","id":"810000"},{"name":"澳门特别行政区","id":"820000"}]}
+}
+
+@All('/UploadAvatar')
+async UploadAvatar(@Files() files, @Fields() fields) {
+
+let admin=this.ctx.state.user;   
+let url=""
+for(let i in files)
+{
+let row=files[i]
+const localFile = row["data"];
+let NewFile="images/"+common.GenUUID(row["filename"])
+await this.ossService.put(NewFile, localFile);
+url=NewFile
+if(admin)
+{
+await this.dbopService.name("attachment").insert({title:"文件",file_name:url,file_path:url,add_time:common.unixtime10(),admin_id:admin.id,department_id:admin.department_id})
+}
+}
+//SetHeader('Access-Control-Allow-Credentials', 'true')
+SetHeader('Access-Control-Allow-Origin', '*');
+SetHeader('Access-Control-Allow-Headers', 'x-requested-with, accept, origin, content-type');
+SetHeader('Access-Control-Allow-Methods', 'OPTIONS, GET, PUT, POST, DELETE');
+const config= this.app.getConfig()
+const ossconfig=config["oss"]["clients"]["default"]  
+url="http://"+ossconfig["bucket"]+"."+ossconfig["endpoint"]+"/"+url
+if(admin)
+await this.dbopService.name("admin").where("id=?", [admin.id]).update({avatar:url})
+
+return {
+    "data":url,
+    "url":url,
+    success: true,
+   code:0,
+   msg:"上传成功"
+  }
+  
+}
 
 }

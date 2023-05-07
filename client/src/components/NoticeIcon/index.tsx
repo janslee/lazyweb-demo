@@ -119,7 +119,10 @@ const NoticeIconView: React.FC = () => {
       loading={false}
       clearText="清空"
       viewMoreText="查看更多"
-      onViewMore={() => message.info('Click on view more')}
+      onViewMore={() => {
+        //查看更多
+       // message.info('Click on view more')
+      }}
       clearClose
     >
       <NoticeIcon.Tab

@@ -204,10 +204,10 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     },
     links: isDev
       ? [
-          <Link key="openapi" to="/umi/plugin/openapi" target="_blank">
+          <a key="openapi" href='http://lazywebhelp.1jian.vip'  target="_blank">
             <LinkOutlined />
-            <span>OpenAPI 文档</span>
-          </Link>,
+            <span>开发文档</span>
+          </a>,
           <Link style={{display:"none"}} to="/~docs" key="docs">
             <BookOutlined />
             <span>业务组件文档</span>
