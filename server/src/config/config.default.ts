@@ -34,11 +34,12 @@ cors: {
 oss: {
   // normal oss bucket
   client: {
-    accessKeyId: '2SBVTeVOU7bJiJwm',
-    accessKeySecret: 'kPgMeJ3ZU0YAFnmPwsbDzXMCiVkx36',
-    bucket: 'd51kdtop',
+    accessKeyId: '1212',
+    accessKeySecret: '1212a',
+    bucket: '1212',
     endpoint: 'oss-cn-shanghai.aliyuncs.com',
     timeout: '60s',
+
   },
 },
 upload: {
