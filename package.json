@@ -1,8 +1,9 @@
 {
-    "name": "a-template",
+    "name": "lazy-web",
     "version": "1.0.0",
-    "description": "",
-    "author": "",
+    "description": "懒人低代码",
+    "author": "jasper chan",
+    "license": "MIT",
     "scripts": {
         "server": "cd server && npm run dev ",
         "client": "cd client  &&  npm run dev ",

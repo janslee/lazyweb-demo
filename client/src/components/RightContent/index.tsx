@@ -25,8 +25,10 @@ const GlobalHeaderRight: React.FC = () => {
 
   return (
     <Space className={className}>
+      {/*
       <HeaderSearch
         className={`${styles.action} ${styles.search}`}
+      
         placeholder="站内搜索"
         defaultValue="umi ui"
         options={[
@@ -50,17 +52,29 @@ const GlobalHeaderRight: React.FC = () => {
         //   console.log('input', value);
         // }}
       />
-      <span
+    */  
+    }
+      {
+      
+        /* 
+         <span
         className={styles.action}
         onClick={() => {
           window.open('https://pro.ant.design/docs/getting-started');
         }}
       >
         <QuestionCircleOutlined />
+     
       </span>
+        */
+       }
       <NoticeIconView />
       <Avatar menu />
-      <SelectLang className={styles.action} />
+      {
+       //  <SelectLang className={styles.action} />
+        /* 多行注释 */
+       }
+   
     </Space>
   );
 };
