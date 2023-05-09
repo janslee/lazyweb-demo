@@ -16,6 +16,7 @@ const Settings: LayoutSettings & {
   pwa: false,
   logo: '/logo.webp',
   iconfontUrl: '',
+  
 };
 
 export default Settings;

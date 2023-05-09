@@ -45,6 +45,7 @@ export class APIController {
 
   @All('/getEnv')
   async getEnv(@Body() params: {}, @Query() query: {}) {
+    return process.env
     return this.app.getEnv()
   }
   @All('/getConfig')
@@ -57,6 +58,8 @@ export class APIController {
   }
 
 
+
+  
   @All('/get_user')
   async getUser(@Body() params: {}, @Query() query: {}) {
     let uid = 12

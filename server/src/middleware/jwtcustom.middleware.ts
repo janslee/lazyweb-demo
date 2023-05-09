@@ -118,14 +118,25 @@ return
 
   // 配置忽略鉴权的路由地址
   public match(ctx: Context): boolean {
-    
-    let ignore = ctx.path.indexOf('/api/admin/login') !== -1;
+    let ignore=true
+    if(ctx.path.indexOf('/api') !== -1 || ctx.path.indexOf('/uapi') !== -1)
+    {
+      ignore=false
+    }
+    if(ctx.path=="/")
+    ignore=false
+     ignore = ctx.path.indexOf('/api/admin/login') !== -1;
+  
 
-    //console.log("当前路径",ctx.header?.origin)
+    //console.log("当前路径",ctx.request)
    // if(ctx.header?.origin!=null && ctx.header.origin.indexOf("127.0.0.1")>=0)
    //  ignore=true
    //if(ignore==false && ctx.path.indexOf('/api/Upload') !== -1)
    //ignore=true
+ 
+   if(ignore==false && (ctx.path.indexOf('/api') == -1 && ctx.path.indexOf('/uapi') == -1))
+   ignore=true
+   console.log(""+ctx.path,ignore)
    if(ignore==false && ctx.path.indexOf('/api/Find') !== -1)
    ignore=true
    if(ignore==false && ctx.path.indexOf('/api/SavePageData') !== -1)
@@ -139,7 +150,7 @@ ignore=true
     if(ignore==false && ctx.path.indexOf('/api/login/account') !== -1)
     ignore=true
 
- 
+    
     return !ignore;
   }
 }

@@ -8,12 +8,12 @@ export default {
   },
 
 mysql :{
-    
-    host: 'localhost',
-    user: 'lazyweb',
-    database: 'lazyweb',
-    password:"lazyweb",
-    prefix:"l_"
+
+    host: process.env.LAZY_HOST || '127.0.0.1',
+    user: process.env.LAZY_USER || 'lazyweb',
+    password: process.env.LAZY_PASSWORD || 'lazyweb',
+    database: process.env.LAZY_DATABASE || 'lazyweb',
+    prefix: process.env.LAZY_PREFIX || 'l_',
 
 // 其他配置
 },
@@ -34,12 +34,11 @@ cors: {
 oss: {
   // normal oss bucket
   client: {
-    accessKeyId: '1212',
-    accessKeySecret: '1212a',
-    bucket: '1212',
+    accessKeyId: '2SBVTeVOU7bJiJwm',
+    accessKeySecret: '123',
+    bucket: 'd51kdtop',
     endpoint: 'oss-cn-shanghai.aliyuncs.com',
     timeout: '60s',
-
   },
 },
 upload: {
