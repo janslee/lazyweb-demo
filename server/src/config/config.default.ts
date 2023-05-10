@@ -34,8 +34,8 @@ cors: {
 oss: {
   // normal oss bucket
   client: {
-    accessKeyId: '2SBVTeVOU7bJiJwm',
-    accessKeySecret: 'kPgMeJ3ZU0YAFnmPwsbDzXMCiVkx36',
+    accessKeyId: '123',
+    accessKeySecret: '2323',
     bucket: 'd51kdtop',
     endpoint: 'oss-cn-shanghai.aliyuncs.com',
     timeout: '60s',

@@ -42,6 +42,8 @@ export class ContainerLifeCycle {
       staticCache({
         prefix: '/',
         dir: join(__dirname, './public'),
+        gzip: true,
+      
       })
     );
     //const config= this.app.getConfig()
