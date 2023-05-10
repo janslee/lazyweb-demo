@@ -8,7 +8,8 @@
 typescript全栈解决方案
 ### 本地开发
 
-演示地址:http://lazyweb.1jian.vip/
+演示地址:http://lazyweb.1jian.vip/</br>
+账号admin 密码654321</br>
 ```bash
 $ npm i
 $ npm run dev
@@ -24,6 +25,11 @@ $ open http://localhost:8000/
 <img src="https://1jianvip.oss-cn-shanghai.aliyuncs.com/images/page3.png">
 <br/>
 </p>
+### 编译
+
+```bash
+$ npm run build
+```
 ### 部署
 
 ```bash
