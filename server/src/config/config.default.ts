@@ -35,7 +35,7 @@ oss: {
   // normal oss bucket
   client: {
     accessKeyId: '2SBVTeVOU7bJiJwm',
-    accessKeySecret: '123',
+    accessKeySecret: 'kPgMeJ3ZU0YAFnmPwsbDzXMCiVkx36',
     bucket: 'd51kdtop',
     endpoint: 'oss-cn-shanghai.aliyuncs.com',
     timeout: '60s',

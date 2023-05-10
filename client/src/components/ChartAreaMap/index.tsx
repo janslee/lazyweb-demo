@@ -37,7 +37,15 @@ export const ChartAreaMap= (props: any) => {
 
   const asyncFetchGeoData = (dataNew:any) => {
     let geourl=props.geourl?props.geourl:'https://geo.datav.aliyun.com/areas_v3/bound/310000_full.json'
-    fetch(geourl)
+   
+   
+    fetch("http://1jian.vip/geo.php",{
+      method: 'post',
+      body: JSON.stringify({url:geourl}),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
       .then((response) => response.json())
       .then((json) => {
         let features=json.features

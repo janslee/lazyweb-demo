@@ -8,6 +8,7 @@
 typescript全栈解决方案
 ### 本地开发
 
+演示地址:http://lazyweb.1jian.vip/
 ```bash
 $ npm i
 $ npm run dev
@@ -32,7 +33,7 @@ $ npm start
 
 QQ群:599987061
 <br/>
-还没放演示，过两天放一个
+
 <br/>
 引用的第三方项目
 [midway]: https://midwayjs.org<br/>
